@@ -5,6 +5,9 @@ import "./globals.css";
 export const metadata: Metadata = {
   title: "Label Visualizer",
   description: "Visualize your custom labels on real products",
+  icons: {
+    icon: "/images/olg-favicon.png",
+  },
 };
 
 export default function RootLayout({
