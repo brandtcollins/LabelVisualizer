@@ -16,13 +16,11 @@ export default function LabelSizeSelector({
       size: "3x2" as LabelSize,
       title: '3" × 2"',
       description: "Rectangle - Horizontal",
-      dimensions: "Perfect for bottles, jars, and packaging",
     },
     {
       size: "4x6" as LabelSize,
       title: '4" × 6"',
       description: "Rectangle - Vertical",
-      dimensions: "Ideal for shipping labels and larger products",
     },
   ];
 
@@ -75,7 +73,7 @@ export default function LabelSizeSelector({
               >
                 {label.title}
               </h3>
-              <p className="text-xs text-gray-500">{label.dimensions}</p>
+              {/* <p className="text-xs text-gray-500">{label.dimensions}</p> */}
             </div>
           </button>
         ))}
