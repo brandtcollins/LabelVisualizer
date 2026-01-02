@@ -35,11 +35,11 @@ export default function LabelSizeSelector({
             key={label.size}
             onClick={() => onChange(label.size)}
             className={`
-              relative p-6 rounded-md border-0 transition-all duration-200 text-left shadow-sm
+              relative p-6 rounded-md border transition-all duration-200 text-left shadow-sm border-gray-200
               ${
                 selected === label.size
-                  ? "border-primary bg-white scale-105"
-                  : "border-gray-200 bg-white hover:border-primary-300 hover:shadow-md"
+                  ? " bg-white scale-105"
+                  : " bg-white hover:shadow-md opacity-60 hover:opacity-80"
               }
             `}
           >
@@ -69,7 +69,7 @@ export default function LabelSizeSelector({
                 className=" w-auto"
               />
               <h3
-                className={`text-2xl font-bold ${
+                className={`text-lg font-bold ${
                   selected === label.size ? "text-primary" : "text-gray-800"
                 }`}
               >
