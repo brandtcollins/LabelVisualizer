@@ -1,4 +1,4 @@
-import OpenAI from 'openai';
+import OpenAI, { toFile } from 'openai';
 import fs from 'fs';
 
 if (!process.env.OPENAI_API_KEY) {
@@ -26,9 +26,13 @@ export async function applyArtworkToScene(
   console.log('Mask image:', maskImagePath);
   console.log('Prompt:', prompt);
 
-  // Create read streams for the images
-  const sceneImage = fs.createReadStream(sceneImagePath);
-  const maskImage = fs.createReadStream(maskImagePath);
+  // Convert file streams to File objects with proper mimetype
+  const sceneImage = await toFile(fs.createReadStream(sceneImagePath), 'scene.png', {
+    type: 'image/png',
+  });
+  const maskImage = await toFile(fs.createReadStream(maskImagePath), 'mask.png', {
+    type: 'image/png',
+  });
 
   const startTime = Date.now();
 

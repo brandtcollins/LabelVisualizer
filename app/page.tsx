@@ -166,7 +166,7 @@ export default function Home() {
               </h2>
               <div className="flex justify-center bg-gray-50 rounded-lg p-8">
                 <img
-                  src={previewUrl || ""}
+                  src={mockupData?.imageUrl || ""}
                   alt="Generated mockup"
                   className="max-w-full h-auto max-h-96 rounded-lg shadow-md"
                 />
