@@ -44,7 +44,6 @@ export default function Home() {
       const formData = new FormData();
       formData.append('artwork', selectedFile);
       formData.append('labelSize', selectedSize);
-      formData.append('sceneId', '1'); // Using first scene for now
 
       console.log('Sending POST request to /api/generate...');
 

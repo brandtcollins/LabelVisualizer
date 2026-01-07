@@ -53,3 +53,26 @@ export async function downloadAndSaveImage(
 
   return `/generated/${filename}`;
 }
+
+/**
+ * Save base64-encoded image to filesystem
+ */
+export async function saveBase64Image(
+  base64Data: string,
+  filename: string
+): Promise<string> {
+  const generatedDir = path.join(process.cwd(), 'public', 'generated');
+
+  // Ensure generated directory exists
+  await fs.mkdir(generatedDir, { recursive: true });
+
+  // Convert base64 to buffer
+  const buffer = Buffer.from(base64Data, 'base64');
+
+  const filepath = path.join(generatedDir, filename);
+  await fs.writeFile(filepath, buffer);
+
+  console.log('Saved base64 image:', filepath);
+
+  return `/generated/${filename}`;
+}

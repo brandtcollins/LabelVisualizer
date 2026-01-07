@@ -16,9 +16,10 @@ export default function FileUpload({ onFileSelect, onFileRemove }: FileUploadPro
   const validateFile = (file: File): boolean => {
     setError(null);
 
-    // Check file type
-    if (file.type !== 'image/png') {
-      setError('Only PNG files are accepted');
+    // Check file type (PNG and JPEG supported)
+    const allowedTypes = ['image/png', 'image/jpeg', 'image/jpg'];
+    if (!allowedTypes.includes(file.type)) {
+      setError('Only PNG and JPEG files are accepted');
       return false;
     }
 
@@ -102,7 +103,7 @@ export default function FileUpload({ onFileSelect, onFileRemove }: FileUploadPro
         >
           <input
             type="file"
-            accept="image/png"
+            accept="image/png,image/jpeg,image/jpg"
             onChange={handleChange}
             className="hidden"
             id="file-upload"
@@ -129,7 +130,7 @@ export default function FileUpload({ onFileSelect, onFileRemove }: FileUploadPro
                   Drop your artwork here
                 </p>
                 <p className="text-sm text-gray-500 mb-1">or click to browse</p>
-                <p className="text-xs text-gray-400">PNG only, max 10MB</p>
+                <p className="text-xs text-gray-400">PNG or JPEG, max 10MB</p>
               </div>
             </div>
           </label>

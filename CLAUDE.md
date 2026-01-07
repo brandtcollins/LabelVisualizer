@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-This is an AI-powered label mockup generator MVP built with Next.js. The application allows users to upload custom label artwork and visualize it on real product scenes using OpenAI's DALL-E image editing API. This MVP serves as a proof-of-concept to demonstrate technical feasibility before a production ASP.NET/Vue implementation.
+This is an AI-powered label mockup generator MVP built with Next.js. The application allows users to upload custom label artwork and visualize it on real product scenes using Google Gemini's image generation API. This MVP serves as a proof-of-concept to demonstrate technical feasibility before a production ASP.NET/Vue implementation.
 
 **Business Goal**: Convert organic traffic into qualified leads at $3-5 per lead (vs. $60-80 Google Ads cost) by providing a compelling visualization tool.
 
@@ -27,7 +27,8 @@ npm run lint         # Run ESLint (uses flat config in eslint.config.mjs)
 Required environment variables in `.env.local`:
 
 ```bash
-OPENAI_API_KEY=sk-...              # OpenAI API key for DALL-E
+GEMINI_API_KEY=...                 # Google Gemini API key for image generation
+# OPENAI_API_KEY=sk-...            # (Deprecated) OpenAI API key - switched to Gemini
 MAX_FILE_SIZE_MB=10                # Maximum upload size
 DAILY_GENERATION_LIMIT=5           # Rate limit per user
 ```
@@ -38,48 +39,45 @@ DAILY_GENERATION_LIMIT=5           # Rate limit per user
 - **Framework**: Next.js 16.1.1 with App Router
 - **Language**: TypeScript (strict mode enabled)
 - **Styling**: Tailwind CSS v4 with PostCSS
-- **AI Service**: OpenAI DALL-E API (using `images.edit()` endpoint, NOT `images.generate()`)
+- **AI Service**: Google Gemini API (using `gemini-2.5-flash-image` model for image generation)
 - **Image Processing**: Sharp library
 - **Storage**: Local filesystem (MVP) - production will use Azure/S3
 
 ### Critical Architectural Decisions
 
-1. **DALL-E Edit vs Generate**: This project uses `openai.images.edit()` which modifies existing product photos using masks to replace blank labels with customer artwork. This is NOT generating images from scratch - it requires curated product scenes with blank labels and corresponding mask files.
+1. **AI-Generated Scenes**: This project uses Google Gemini's image generation with strict prompt guardrails to preserve user artwork. The AI generates realistic product photographs around the uploaded label artwork. No pre-built scenes, masks, or manual compositing required.
 
-2. **Scene Library Structure**: Product scenes are stored in `/public/scenes/{labelSize}/` with three files per scene:
-   - `scene-{id}.png` - Base product photo with blank label
-   - `scene-{id}-mask.png` - Transparency mask (white where label should be applied)
-   - `scene-{id}-metadata.json` - Scene configuration
+2. **Label Preservation Philosophy**: The uploaded label artwork is treated as sacred. The prompt explicitly instructs the AI to place the label exactly as-is without altering text, colors, typography, or layout. The AI only generates the container, environment, lighting, shadows, and background.
 
-3. **Caching Strategy**: Uses artwork hash + sceneId + labelSize as cache key. Cache hits return instant results; cache misses trigger DALL-E API calls (~10-15 seconds). This dramatically reduces API costs after initial generation.
+3. **Caching Strategy**: Uses artwork hash + labelSize + timestamp as cache key. Future implementation will cache generated results to reduce API costs on repeated generations.
 
 4. **Path Aliases**: Uses `@/*` to reference root directory files (configured in tsconfig.json)
+
+5. **Simplified Architecture** (per implementation-steps.md): No scene libraries, no alpha masks, no GPU-hosted pipelines. Relies on AI-generated scenes with prompt constraints for speed and simplicity.
 
 ### Directory Structure
 
 ```
 /app
-  /api               # Next.js API routes (currently empty directories)
-    /generate        # POST endpoint for mockup generation
-    /scenes          # GET endpoint for available scenes
-    /mockups         # GET endpoint for user's mockup history
-    /signup          # POST endpoint for user registration
-  /components        # React components (currently empty)
-  page.tsx           # Main landing page (currently minimal)
+  /api
+    /generate        # POST endpoint for mockup generation (implemented)
+  /components        # React components
+    FileUpload.tsx   # File upload with drag-and-drop
+    LabelSizeSelector.tsx  # Label size selection UI
+  page.tsx           # Main landing page
   layout.tsx         # Root layout with metadata
   globals.css        # Tailwind CSS imports
 
 /public
-  /scenes            # Product scene library
-    /3x2             # 3"×2" horizontal label scenes
-    /4x6             # 4"×6" vertical label scenes
-  /uploads           # Uploaded artwork storage
-  /generated         # Generated mockup storage
+  /uploads           # Uploaded artwork storage (created on demand)
+  /generated         # Generated mockup storage (created on demand)
+
+/lib
+  gemini.ts          # Gemini AI integration
+  imageProcessing.ts # Image hashing and file I/O utilities
 
 /types
   index.ts           # TypeScript type definitions
-
-/lib                 # Utility functions (to be created)
 ```
 
 ### Key Type Definitions
@@ -94,18 +92,22 @@ All types are defined in `/types/index.ts`:
 
 ## Implementation Status
 
-**Current State**: Project scaffolding complete with:
-- Basic Next.js setup with TypeScript and Tailwind
-- Type definitions established
-- Directory structure created
-- Minimal landing page
+**Implemented (MVP Complete)**:
+- ✅ Next.js setup with TypeScript and Tailwind CSS
+- ✅ File upload component with drag-and-drop (PNG/JPEG support)
+- ✅ Label size selector component
+- ✅ Gemini AI integration for image generation
+- ✅ Image processing utilities (hashing, file I/O)
+- ✅ `/api/generate` endpoint for mockup generation
+- ✅ Main landing page with full user flow
+- ✅ Preview and download functionality
 
-**Not Yet Implemented**:
-- API route handlers (directories exist but no route.ts files)
-- React components (FileUpload, LabelSizeSelector, MockupViewer, etc.)
-- OpenAI integration utilities
-- Image processing and caching logic
-- Scene library assets (no actual product photos/masks yet)
+**Future Enhancements**:
+- Caching layer to reduce API costs on repeated generations
+- User authentication and rate limiting
+- Multiple product type options (currently hardcoded to "candle")
+- Email capture and lead generation integration
+- Download with watermark for non-authenticated users
 
 ## Important Implementation Notes
 
@@ -122,28 +124,34 @@ export async function POST(request: NextRequest) {
 }
 ```
 
-### Image Processing with Sharp
+### Image Processing
 
-Sharp is installed but not yet used. When implementing, remember:
-- Validate PNG format and dimensions (300-4000px)
-- Generate MD5/SHA-256 hash for caching
-- Handle file I/O with proper error handling
+The app uses Node.js built-in `crypto` module for hashing and file I/O:
+- MD5 hashing for artwork deduplication and cache keys
+- File validation: PNG/JPEG format, 10MB max size
+- Filesystem storage in `/public/uploads` and `/public/generated`
+- Sharp library is installed but currently unused (available for future image optimization)
 
-### DALL-E Integration Pattern
+### Gemini Integration Pattern
 
-The critical OpenAI API call pattern:
+The critical Gemini API call pattern (see `lib/gemini.ts`):
 
 ```typescript
-const response = await openai.images.edit({
-  image: fs.createReadStream(sceneImagePath),    // Product photo
-  mask: fs.createReadStream(maskImagePath),      // Label area mask
-  prompt: "Apply custom label artwork maintaining lighting and perspective",
-  n: 1,
-  size: "1024x1024",
+const response = await genai.models.generateContent({
+  model: 'gemini-2.5-flash-image',
+  contents: [
+    { text: prompt },  // Strict prompt preserving label artwork
+    {
+      inlineData: {
+        mimeType: artworkFile.type,
+        data: base64Image,  // User's uploaded label
+      },
+    },
+  ],
 });
 ```
 
-**Cost**: $0.02 per edit (vs $0.04-0.08 for generate) - 50% savings
+**Cost**: ~$0.039 per image (1290 output tokens × $30 per 1M tokens)
 
 ### Caching Implementation
 
@@ -163,20 +171,22 @@ Cache key: `${artworkHash}-${sceneId}-${labelSize}`
 
 ## Development Workflow
 
-### Creating Scene Assets
-
-1. Obtain product photo with blank white label (1024x1024px minimum)
-2. Create mask in image editor (white where label is, transparent elsewhere)
-3. Create metadata JSON with scene info and label coordinates
-4. Place all three files in `/public/scenes/{labelSize}/`
-
 ### Testing Mockup Generation
 
-1. Ensure `OPENAI_API_KEY` is set in `.env.local`
+1. Ensure `GEMINI_API_KEY` is set in `.env.local`
 2. Upload PNG artwork through UI
 3. Select label size (3x2 or 4x6)
-4. Generate mockup (first generation ~10-15s, cached <1s)
-5. Check `/public/generated/` for output file
+4. Click "Generate Mockup"
+5. Wait for AI generation (~10-20 seconds)
+6. View generated mockup in browser
+7. Check `/public/generated/` for saved output file
+
+### Important Notes
+
+- No pre-built scene assets needed - AI generates scenes on demand
+- Label artwork is preserved exactly as uploaded
+- Each generation creates a unique product photograph
+- Generation time depends on Gemini API response time
 
 ## Production Handoff Notes
 
@@ -191,6 +201,7 @@ This MVP demonstrates technical feasibility for an ASP.NET Core + Vue 2.7 produc
 ## Reference Documentation
 
 - **Full Specification**: See `ai-label-mockup-mvp.md` for comprehensive business requirements, API contracts, database schemas, and production architecture
-- **Implementation Steps**: See `implementation-steps.md` for detailed step-by-step build guide
-- **OpenAI Edit API**: https://platform.openai.com/docs/api-reference/images/createEdit
+- **Implementation Steps**: See `implementation-steps.md` for architectural approach and design philosophy
+- **Gemini Image Generation API**: https://ai.google.dev/gemini-api/docs/image-generation
+- **Google AI SDK**: https://www.npmjs.com/package/@google/genai
 - **Next.js App Router**: https://nextjs.org/docs/app
