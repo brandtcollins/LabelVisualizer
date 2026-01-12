@@ -1,0 +1,286 @@
+{
+  "version": "1.0",
+  "units": "in",
+  "globalPromptRules": [
+    "The label is already printed and finished.",
+    "Do not alter the label in any way. Do not redraw, repaint, restyle, reinterpret, enhance, or modify the label.",
+    "Do not change any text, colors, typography, layout, proportions, textures, or graphic elements.",
+    "Treat the label as a fixed physical object attached to the product.",
+    "Generate a realistic product photograph. Only generate the container, environment, lighting, shadows, and background.",
+    "No added label effects (no embossing, foil, glitter, or extra graphics)."
+  ],
+  "mockupProducts": [
+    {
+      "id": "jar_lid_round",
+      "name": "Jar Lid or Small Round Tin Lid",
+      "category": "lids",
+      "allowedShapes": ["circle"],
+      "labelConstraints": {
+        "minDiameter": 1.25,
+        "maxDiameter": 4.0
+      },
+      "prompt": {
+        "productNoun": "lid",
+        "containerDescriptor": "a realistic metal tin lid or jar lid",
+        "attachmentDescriptor": "flat and centered on the top surface",
+        "photoStyleDefaults": {
+          "shotType": "top-down product photo",
+          "background": "clean neutral surface",
+          "lighting": "soft studio lighting"
+        }
+      },
+      "tags": ["round", "top-label"]
+    },
+    {
+      "id": "sugar_scrub_jar",
+      "name": "Sugar Scrub Jar",
+      "category": "bath-body",
+      "allowedShapes": ["rectangle", "square", "circle"],
+      "labelConstraints": {
+        "rectangle": { "minW": 2.0, "maxW": 5.0, "minH": 1.5, "maxH": 4.0 },
+        "circle": { "minDiameter": 1.5, "maxDiameter": 4.0 }
+      },
+      "prompt": {
+        "productNoun": "jar",
+        "containerDescriptor": "a realistic sugar scrub jar (glass or plastic) with a screw-top lid",
+        "attachmentDescriptor": "smoothly applied, flat and intact, with realistic edge adhesion",
+        "photoStyleDefaults": {
+          "shotType": "front 3/4 angle",
+          "background": "clean neutral background",
+          "lighting": "soft studio lighting"
+        }
+      },
+      "tags": ["jar", "bath", "wide-label"]
+    },
+    {
+      "id": "hand_cream_tube",
+      "name": "Hand Cream Tube",
+      "category": "bath-body",
+      "allowedShapes": ["rectangle", "square"],
+      "labelConstraints": {
+        "minW": 1.75,
+        "maxW": 4.0,
+        "minH": 2.0,
+        "maxH": 6.5
+      },
+      "prompt": {
+        "productNoun": "tube",
+        "containerDescriptor": "a realistic hand cream squeeze tube (matte or semi-gloss plastic) with a cap",
+        "attachmentDescriptor": "applied flat with no wrinkles, following the slight curvature of the tube",
+        "photoStyleDefaults": {
+          "shotType": "front 3/4 angle",
+          "background": "clean neutral background",
+          "lighting": "soft studio lighting"
+        }
+      },
+      "tags": ["tube", "bath-body"]
+    },
+    {
+      "id": "lotion_bottle",
+      "name": "Lotion Bottle",
+      "category": "bath-body",
+      "allowedShapes": ["rectangle", "square"],
+      "labelConstraints": {
+        "minW": 2.0,
+        "maxW": 4.75,
+        "minH": 2.25,
+        "maxH": 7.5
+      },
+      "prompt": {
+        "productNoun": "bottle",
+        "containerDescriptor": "a realistic lotion bottle with a pump or flip-top cap",
+        "attachmentDescriptor": "applied flat and centered on the front face with realistic edges",
+        "photoStyleDefaults": {
+          "shotType": "front 3/4 angle",
+          "background": "clean neutral background",
+          "lighting": "soft studio lighting"
+        }
+      },
+      "tags": ["bottle", "pump"]
+    },
+    {
+      "id": "wax_melt_clamshell",
+      "name": "Wax Melt Clamshell",
+      "category": "candles",
+      "allowedShapes": ["rectangle", "square"],
+      "labelConstraints": {
+        "minW": 2.5,
+        "maxW": 4.0,
+        "minH": 1.5,
+        "maxH": 3.0
+      },
+      "preferredSkus": ["OL996"],
+      "prompt": {
+        "productNoun": "clamshell",
+        "containerDescriptor": "a realistic clear plastic wax melt clamshell package",
+        "attachmentDescriptor": "applied flat on the front panel, aligned straight with crisp edges",
+        "photoStyleDefaults": {
+          "shotType": "front angle product photo",
+          "background": "clean neutral background",
+          "lighting": "soft studio lighting"
+        }
+      },
+      "tags": ["wax-melt", "clear-plastic", "OL996"]
+    },
+    {
+      "id": "dropper_bottle",
+      "name": "Dropper Bottle (Beard Oil / Essential Oil)",
+      "category": "bottles",
+      "allowedShapes": ["rectangle", "square"],
+      "labelConstraints": {
+        "minW": 1.0,
+        "maxW": 2.5,
+        "minH": 1.25,
+        "maxH": 4.0
+      },
+      "prompt": {
+        "productNoun": "bottle",
+        "containerDescriptor": "a realistic amber or clear glass dropper bottle with a rubber bulb and glass pipette",
+        "attachmentDescriptor": "applied flat around the curved body with minimal distortion and clean edges",
+        "photoStyleDefaults": {
+          "shotType": "front 3/4 angle",
+          "background": "clean neutral background",
+          "lighting": "soft studio lighting"
+        }
+      },
+      "tags": ["dropper", "oil", "small-label"]
+    },
+    {
+      "id": "spray_bottle",
+      "name": "Spray Bottle (Cleaner / Room Spray)",
+      "category": "bottles",
+      "allowedShapes": ["rectangle", "square"],
+      "labelConstraints": {
+        "minW": 2.0,
+        "maxW": 5.25,
+        "minH": 2.0,
+        "maxH": 8.5
+      },
+      "prompt": {
+        "productNoun": "bottle",
+        "containerDescriptor": "a realistic spray bottle with a trigger sprayer or fine-mist sprayer",
+        "attachmentDescriptor": "applied flat and centered on the front face with realistic edge adhesion",
+        "photoStyleDefaults": {
+          "shotType": "front 3/4 angle",
+          "background": "clean neutral background",
+          "lighting": "soft studio lighting"
+        }
+      },
+      "tags": ["spray", "cleaner", "room-spray"]
+    },
+    {
+      "id": "wrapped_soap",
+      "name": "Wrapped Soap Bar",
+      "category": "soap",
+      "allowedShapes": ["rectangle", "square"],
+      "labelConstraints": {
+        "minW": 2.0,
+        "maxW": 10.0,
+        "minH": 1.0,
+        "maxH": 4.0
+      },
+      "prompt": {
+        "productNoun": "soap bar",
+        "containerDescriptor": "a realistic soap bar wrapped in paper or a thin clear wrap",
+        "attachmentDescriptor": "applied flat on the front of the wrap, aligned straight with clean edges",
+        "photoStyleDefaults": {
+          "shotType": "front 3/4 angle",
+          "background": "clean neutral background",
+          "lighting": "soft studio lighting"
+        }
+      },
+      "tags": ["soap", "wrapped", "band-or-front"]
+    },
+    {
+      "id": "wine_beer_bottle",
+      "name": "Wine or Beer Bottle",
+      "category": "beverage",
+      "allowedShapes": ["rectangle", "square"],
+      "labelConstraints": {
+        "minW": 2.25,
+        "maxW": 5.0,
+        "minH": 2.5,
+        "maxH": 6.5
+      },
+      "prompt": {
+        "productNoun": "bottle",
+        "containerDescriptor": "a realistic glass wine or beer bottle",
+        "attachmentDescriptor": "applied flat on the front with realistic edges and subtle curvature conformity",
+        "photoStyleDefaults": {
+          "shotType": "front 3/4 angle",
+          "background": "clean neutral background",
+          "lighting": "soft studio lighting"
+        }
+      },
+      "tags": ["beverage", "glass-bottle"]
+    },
+    {
+      "id": "coffee_bag",
+      "name": "Coffee Bag or Loose Leaf Tea Bag",
+      "category": "bags",
+      "allowedShapes": ["rectangle", "square"],
+      "labelConstraints": {
+        "minW": 2.0,
+        "maxW": 6.5,
+        "minH": 2.0,
+        "maxH": 7.5
+      },
+      "prompt": {
+        "productNoun": "bag",
+        "containerDescriptor": "a realistic stand-up pouch bag (kraft paper or matte plastic), like coffee or tea packaging",
+        "attachmentDescriptor": "applied flat on the front panel with clean edges and no wrinkles",
+        "photoStyleDefaults": {
+          "shotType": "front angle product photo",
+          "background": "clean neutral background",
+          "lighting": "soft studio lighting"
+        }
+      },
+      "tags": ["pouch", "coffee", "tea"]
+    },
+    {
+      "id": "generic_white_bag",
+      "name": "Generic White Bag (Coffee/Tea Style)",
+      "category": "bags",
+      "allowedShapes": ["rectangle", "square"],
+      "labelConstraints": {
+        "minW": 1.5,
+        "maxW": 6.0,
+        "minH": 1.5,
+        "maxH": 7.0
+      },
+      "prompt": {
+        "productNoun": "bag",
+        "containerDescriptor": "a realistic plain white stand-up pouch bag with minimal printing",
+        "attachmentDescriptor": "applied flat on the front panel, aligned straight and intact",
+        "photoStyleDefaults": {
+          "shotType": "front angle product photo",
+          "background": "clean neutral background",
+          "lighting": "soft studio lighting"
+        }
+      },
+      "tags": ["pouch", "minimal", "white-bag"]
+    },
+    {
+      "id": "generic_box",
+      "name": "Generic Product Box",
+      "category": "boxes",
+      "allowedShapes": ["rectangle", "square"],
+      "labelConstraints": {
+        "minW": 2.0,
+        "maxW": 7.0,
+        "minH": 2.0,
+        "maxH": 11.0
+      },
+      "prompt": {
+        "productNoun": "box",
+        "containerDescriptor": "a realistic plain product box (cardboard or paperboard)",
+        "attachmentDescriptor": "applied flat on the front face with crisp edges and no wrinkles",
+        "photoStyleDefaults": {
+          "shotType": "front 3/4 angle",
+          "background": "clean neutral background",
+          "lighting": "soft studio lighting"
+        }
+      }
+    }
+  ]
+}

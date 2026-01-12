@@ -5,6 +5,7 @@ import {
   saveUploadedFile,
   saveBase64Image,
 } from "@/lib/imageProcessing";
+import { getProductSceneById, buildPromptForProduct } from "@/lib/productScenes";
 
 export const runtime = "nodejs";
 
@@ -15,18 +16,30 @@ export async function POST(request: NextRequest) {
     const formData = await request.formData();
     const artworkFile = formData.get("artwork") as File;
     const labelSize = formData.get("labelSize") as string;
+    const productId = formData.get("productId") as string;
 
     console.log("=== API Generate Request ===");
     console.log("File name:", artworkFile?.name);
     console.log("File size:", artworkFile?.size, "bytes");
     console.log("File type:", artworkFile?.type);
     console.log("Label size:", labelSize);
+    console.log("Product ID:", productId);
 
     // Validate required fields
-    if (!artworkFile || !labelSize) {
+    if (!artworkFile || !labelSize || !productId) {
       console.error("Missing required fields");
       return NextResponse.json(
         { success: false, error: "Missing required fields" },
+        { status: 400 }
+      );
+    }
+
+    // Get product scene configuration
+    const productScene = getProductSceneById(productId);
+    if (!productScene) {
+      console.error("Invalid product ID:", productId);
+      return NextResponse.json(
+        { success: false, error: "Invalid product type" },
         { status: 400 }
       );
     }
@@ -63,8 +76,12 @@ export async function POST(request: NextRequest) {
     const uploadedPath = await saveUploadedFile(buffer, artworkHash);
     console.log("Uploaded artwork saved:", uploadedPath);
 
+    // Build prompt from product scene configuration
+    const prompt = buildPromptForProduct(productScene);
+    console.log("Generated prompt:", prompt);
+
     // Generate mockup with Gemini image generation
-    const base64Image = await generateProductMockup(artworkFile, "candle");
+    const base64Image = await generateProductMockup(artworkFile, prompt);
 
     // Save generated image with timestamp to prevent overwrites
     const timestamp = Date.now();

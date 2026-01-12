@@ -16,28 +16,18 @@ const genai = new GoogleGenAI({
  * a realistic product photograph around the user's artwork without altering it.
  *
  * @param artworkFile - The user's uploaded artwork file
- * @param productType - Type of product (e.g., "candle", "bottle", "jar")
+ * @param prompt - Custom prompt string (built from product-scenes.json configuration)
  * @returns Base64-encoded PNG image string
  * @throws Error if generation fails or API key is missing
  */
 export async function generateProductMockup(
   artworkFile: File,
-  productType: string = 'candle'
+  prompt: string
 ): Promise<string> {
   console.log('=== Gemini Image Generation Call ===');
   console.log('Artwork file:', artworkFile.name);
   console.log('File size:', artworkFile.size, 'bytes');
-  console.log('Product type:', productType);
-
-  // Strict prompt enforcing label preservation (per implementation-steps.md)
-  const prompt =
-    `Place the provided label image exactly as-is onto a realistic ${productType} jar. ` +
-    "The label is already printed and finished. " +
-    "Do not alter the label in any way. Do not redraw, repaint, restyle, reinterpret, enhance, or modify the label. " +
-    "Do not change any text, colors, typography, layout, proportions, textures, or graphic elements. " +
-    "Treat the label as a fixed physical object attached to the jar. " +
-    "Generate a realistic product photograph. Only generate the container, environment, lighting, shadows, and background. " +
-    "No added label effects (no embossing, foil, glitter, or extra graphics).";
+  console.log('Using custom prompt from product configuration');
 
   const startTime = Date.now();
 
@@ -80,7 +70,7 @@ export async function generateProductMockup(
 
     // Find the image part in the response
     for (const part of candidate.content.parts) {
-      if (part.inlineData) {
+      if (part.inlineData?.data) {
         console.log('Generated image received (base64)');
         return part.inlineData.data;
       }

@@ -1,18 +1,25 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import LabelSizeSelector from "./components/LabelSizeSelector";
 import FileUpload from "./components/FileUpload";
+import ProductSelector from "./components/ProductSelector";
 import { LabelSize } from "@/types";
+import { getProductList } from "@/lib/productScenes";
 
 export default function Home() {
   const [selectedSize, setSelectedSize] = useState<LabelSize>("3x2");
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [selectedProduct, setSelectedProduct] = useState<string>("sugar_scrub_jar");
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [showMockup, setShowMockup] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [mockupData, setMockupData] = useState<any>(null);
+
+  // Get product list for selector
+  const products = getProductList();
 
   const handleFileSelect = (file: File) => {
     setSelectedFile(file);
@@ -38,12 +45,14 @@ export default function Home() {
     console.log('=== Client: Starting generation ===');
     console.log('Selected file:', selectedFile.name);
     console.log('Label size:', selectedSize);
+    console.log('Product type:', selectedProduct);
 
     try {
       // Create FormData
       const formData = new FormData();
       formData.append('artwork', selectedFile);
       formData.append('labelSize', selectedSize);
+      formData.append('productId', selectedProduct);
 
       console.log('Sending POST request to /api/generate...');
 
@@ -88,6 +97,27 @@ export default function Home() {
   return (
     <main className="min-h-screen bg-gradient-to-b from-gray-50 to-white py-12">
       <div className="container mx-auto px-4 max-w-4xl">
+        {/* Navigation Bar */}
+        <div className="flex justify-end mb-6">
+          <Link
+            href="/generated"
+            className="inline-flex items-center gap-2 px-4 py-2 bg-white border-2 border-gray-300 rounded-lg hover:border-primary hover:bg-primary/5 transition-colors"
+          >
+            <svg
+              className="w-5 h-5"
+              fill="none"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth="2"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+            </svg>
+            View Gallery
+          </Link>
+        </div>
+
         <div className="text-center mb-12">
           <h1 className="text-4xl font-bold text-gray-900 mb-4">
             Visualize Your Custom Labels on Real Products
@@ -102,6 +132,12 @@ export default function Home() {
             <FileUpload
               onFileSelect={handleFileSelect}
               onFileRemove={handleFileRemove}
+            />
+
+            <ProductSelector
+              selected={selectedProduct}
+              onChange={setSelectedProduct}
+              products={products}
             />
 
             <LabelSizeSelector
@@ -184,14 +220,20 @@ export default function Home() {
             </div>
 
             {/* Action Buttons */}
-            <div className="flex gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
               <button
                 onClick={handleReset}
-                className="flex-1 py-3 px-6 border-2 border-gray-300 rounded-lg font-medium text-gray-700 hover:border-gray-400 hover:bg-gray-50 transition-colors"
+                className="py-3 px-6 border-2 border-gray-300 rounded-lg font-medium text-gray-700 hover:border-gray-400 hover:bg-gray-50 transition-colors"
               >
                 Create Another Mockup
               </button>
-              <button className="flex-1 py-3 px-6 bg-primary text-white rounded-lg font-medium hover:bg-primary-600 transition-colors">
+              <Link
+                href="/generated"
+                className="py-3 px-6 border-2 border-primary text-primary rounded-lg font-medium hover:bg-primary/5 transition-colors text-center"
+              >
+                View All Mockups
+              </Link>
+              <button className="py-3 px-6 bg-primary text-white rounded-lg font-medium hover:bg-primary-600 transition-colors">
                 Download Mockup
               </button>
             </div>
