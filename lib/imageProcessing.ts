@@ -76,3 +76,23 @@ export async function saveBase64Image(
 
   return `/generated/${filename}`;
 }
+
+/**
+ * Save image buffer to filesystem
+ */
+export async function saveBufferImage(
+  buffer: Buffer,
+  filename: string
+): Promise<string> {
+  const generatedDir = path.join(process.cwd(), 'public', 'generated');
+
+  // Ensure generated directory exists
+  await fs.mkdir(generatedDir, { recursive: true });
+
+  const filepath = path.join(generatedDir, filename);
+  await fs.writeFile(filepath, buffer);
+
+  console.log('Saved buffer image:', filepath);
+
+  return `/generated/${filename}`;
+}

@@ -3,9 +3,10 @@ import { generateProductMockup } from "@/lib/gemini";
 import {
   hashBuffer,
   saveUploadedFile,
-  saveBase64Image,
+  saveBufferImage,
 } from "@/lib/imageProcessing";
 import { getProductSceneById, buildPromptForProduct } from "@/lib/productScenes";
+import { addLogoWatermark } from "@/lib/watermark";
 
 export const runtime = "nodejs";
 
@@ -82,11 +83,18 @@ export async function POST(request: NextRequest) {
 
     // Generate mockup with Gemini image generation
     const base64Image = await generateProductMockup(artworkFile, prompt);
+    console.log("Gemini image generated, applying watermark...");
 
-    // Save generated image with timestamp to prevent overwrites
+    // Apply watermark with text to generated image
+    const watermarkedBuffer = await addLogoWatermark(base64Image, {
+      padding: 20,
+      opacity: 0.35,
+    });
+
+    // Save watermarked image with timestamp to prevent overwrites
     const timestamp = Date.now();
     const filename = `${artworkHash}-${labelSize}-${timestamp}.png`;
-    const savedUrl = await saveBase64Image(base64Image, filename);
+    const savedUrl = await saveBufferImage(watermarkedBuffer, filename);
 
     const generationTime = (Date.now() - startTime) / 1000;
     console.log(`Total generation time: ${generationTime.toFixed(2)}s`);
