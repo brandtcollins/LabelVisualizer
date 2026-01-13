@@ -2,16 +2,24 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import LabelSizeSelector from "./components/LabelSizeSelector";
+import LabelSizeSelector, {
+  LabelDimensions,
+} from "./components/LabelSizeSelector";
 import FileUpload from "./components/FileUpload";
 import ProductSelector from "./components/ProductSelector";
-import { LabelSize } from "@/types";
 import { getProductList } from "@/lib/productScenes";
 
 export default function Home() {
-  const [selectedSize, setSelectedSize] = useState<LabelSize>("3x2");
+  const [labelDimensions, setLabelDimensions] = useState<LabelDimensions>({
+    width: 3,
+    height: 2,
+  });
+  const [dimensionsFilter, setDimensionsFilter] = useState<
+    LabelDimensions | undefined
+  >(undefined);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
-  const [selectedProduct, setSelectedProduct] = useState<string>("sugar_scrub_jar");
+  const [selectedProduct, setSelectedProduct] =
+    useState<string>("sugar_scrub_jar");
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [showMockup, setShowMockup] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -36,48 +44,55 @@ export default function Home() {
     }
   };
 
+  const handleDimensionsFinalized = (dimensions: LabelDimensions) => {
+    setDimensionsFilter(dimensions);
+  };
+
   const handleGenerate = async () => {
     if (!selectedFile) return;
 
     setLoading(true);
     setError(null);
 
-    console.log('=== Client: Starting generation ===');
-    console.log('Selected file:', selectedFile.name);
-    console.log('Label size:', selectedSize);
-    console.log('Product type:', selectedProduct);
+    console.log("=== Client: Starting generation ===");
+    console.log("Selected file:", selectedFile.name);
+    console.log("Label dimensions:", labelDimensions);
+    console.log("Product type:", selectedProduct);
 
     try {
       // Create FormData
       const formData = new FormData();
-      formData.append('artwork', selectedFile);
-      formData.append('labelSize', selectedSize);
-      formData.append('productId', selectedProduct);
+      formData.append("artwork", selectedFile);
+      formData.append(
+        "labelSize",
+        `${labelDimensions.width}x${labelDimensions.height}`
+      );
+      formData.append("productId", selectedProduct);
 
-      console.log('Sending POST request to /api/generate...');
+      console.log("Sending POST request to /api/generate...");
 
       // Make API call
-      const response = await fetch('/api/generate', {
-        method: 'POST',
+      const response = await fetch("/api/generate", {
+        method: "POST",
         body: formData,
       });
 
-      console.log('Response status:', response.status);
+      console.log("Response status:", response.status);
 
       const data = await response.json();
-      console.log('Response data:', data);
+      console.log("Response data:", data);
 
       if (data.success) {
         setMockupData(data);
         setShowMockup(true);
-        console.log('Success! Showing mockup');
+        console.log("Success! Showing mockup");
       } else {
-        setError(data.error || 'Failed to generate mockup');
-        console.error('API returned error:', data.error);
+        setError(data.error || "Failed to generate mockup");
+        console.error("API returned error:", data.error);
       }
     } catch (err) {
-      console.error('Fetch error:', err);
-      setError('An error occurred. Please try again.');
+      console.error("Fetch error:", err);
+      setError("An error occurred. Please try again.");
     } finally {
       setLoading(false);
     }
@@ -98,25 +113,7 @@ export default function Home() {
     <main className="min-h-screen bg-gradient-to-b from-gray-50 to-white py-12">
       <div className="container mx-auto px-4 max-w-4xl">
         {/* Navigation Bar */}
-        <div className="flex justify-end mb-6">
-          <Link
-            href="/generated"
-            className="inline-flex items-center gap-2 px-4 py-2 bg-white border-2 border-gray-300 rounded-lg hover:border-primary hover:bg-primary/5 transition-colors"
-          >
-            <svg
-              className="w-5 h-5"
-              fill="none"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth="2"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-            >
-              <path d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-            </svg>
-            View Gallery
-          </Link>
-        </div>
+        <div className="flex justify-end mb-6"></div>
 
         <div className="text-center mb-12">
           <h1 className="text-4xl font-bold text-gray-900 mb-4">
@@ -134,15 +131,17 @@ export default function Home() {
               onFileRemove={handleFileRemove}
             />
 
+            <LabelSizeSelector
+              dimensions={labelDimensions}
+              onChange={setLabelDimensions}
+              onDimensionsFinalized={handleDimensionsFinalized}
+            />
+
             <ProductSelector
               selected={selectedProduct}
               onChange={setSelectedProduct}
               products={products}
-            />
-
-            <LabelSizeSelector
-              selected={selectedSize}
-              onChange={setSelectedSize}
+              filterByDimensions={dimensionsFilter}
             />
 
             {/* Generate Button */}
@@ -208,11 +207,14 @@ export default function Home() {
               </div>
               <div className="mt-4 text-center space-y-1">
                 <p className="text-sm text-gray-500">
-                  Label Size: {selectedSize === "3x2" ? '3" × 2"' : '4" × 6"'}
+                  Label Size: {labelDimensions.width}" ×{" "}
+                  {labelDimensions.height}"
                 </p>
                 {mockupData && (
                   <p className="text-xs text-gray-400">
-                    {mockupData.cached ? '✓ Retrieved from cache' : '✓ Newly generated'}
+                    {mockupData.cached
+                      ? "✓ Retrieved from cache"
+                      : "✓ Newly generated"}
                     {mockupData.message && ` • ${mockupData.message}`}
                   </p>
                 )}

@@ -1,64 +1,95 @@
 "use client";
-import Image from "next/image";
-import { LabelSize } from "@/types";
+import { useState } from "react";
+
+export interface LabelDimensions {
+  width: number;
+  height: number;
+}
 
 interface LabelSizeSelectorProps {
-  selected: LabelSize;
-  onChange: (size: LabelSize) => void;
+  dimensions: LabelDimensions;
+  onChange: (dimensions: LabelDimensions) => void;
+  onDimensionsFinalized?: (dimensions: LabelDimensions) => void;
 }
 
 export default function LabelSizeSelector({
-  selected,
+  dimensions,
   onChange,
+  onDimensionsFinalized,
 }: LabelSizeSelectorProps) {
-  const labelSizes = [
-    {
-      size: "3x2" as LabelSize,
-      title: '3" × 2"',
-      description: "Rectangle - Horizontal",
-    },
-    {
-      size: "4x6" as LabelSize,
-      title: '4" × 6"',
-      description: "Rectangle - Vertical",
-    },
-  ];
+  const [width, setWidth] = useState(dimensions.width.toString());
+  const [height, setHeight] = useState(dimensions.height.toString());
+
+  const handleWidthChange = (value: string) => {
+    setWidth(value);
+    const numValue = parseFloat(value);
+    if (!isNaN(numValue) && numValue > 0) {
+      onChange({ width: numValue, height: dimensions.height });
+    }
+  };
+
+  const handleHeightChange = (value: string) => {
+    setHeight(value);
+    const numValue = parseFloat(value);
+    if (!isNaN(numValue) && numValue > 0) {
+      onChange({ width: dimensions.width, height: numValue });
+    }
+  };
+
+  const handleBlur = () => {
+    const widthNum = parseFloat(width);
+    const heightNum = parseFloat(height);
+
+    if (!isNaN(widthNum) && widthNum > 0 && !isNaN(heightNum) && heightNum > 0) {
+      const finalDimensions = { width: widthNum, height: heightNum };
+      onChange(finalDimensions);
+      if (onDimensionsFinalized) {
+        onDimensionsFinalized(finalDimensions);
+      }
+    }
+  };
 
   return (
     <div className="w-full">
-      <h2 className="text-xl font-semibold text-gray-800 mb-4">Select Label</h2>
-      <div className="grid grid-cols-1 md:grid-cols-5 gap-6">
-        {labelSizes.map((label) => (
-          <button
-            key={label.size}
-            onClick={() => onChange(label.size)}
-            className={`
-              relative p-6 rounded-md border transition-all duration-200 text-left shadow-sm border-gray-200
-              ${
-                selected === label.size
-                  ? " bg-white scale-105"
-                  : " bg-white hover:shadow-md opacity-60 hover:opacity-80"
-              }
-            `}
-          >
-            <div className="space-y-2">
-              <Image
-                src="/images/label-thumbnails/3x2.webp"
-                alt="Online Labels"
-                width={150}
-                height={40}
-                className=" w-auto"
-              />
-              <h3
-                className={`text-lg font-bold ${
-                  selected === label.size ? "text-primary" : "text-gray-800"
-                }`}
-              >
-                {label.title}
-              </h3>
-            </div>
-          </button>
-        ))}
+      <h2 className="text-xl font-semibold text-gray-800 mb-4">Label Size</h2>
+      <div className="bg-white border-2 border-gray-300 rounded-xl p-6">
+        <div className="grid grid-cols-2 gap-4">
+          <div>
+            <label htmlFor="width" className="block text-sm font-medium text-gray-700 mb-2">
+              Width (inches)
+            </label>
+            <input
+              id="width"
+              type="number"
+              min="0.1"
+              step="0.1"
+              value={width}
+              onChange={(e) => handleWidthChange(e.target.value)}
+              onBlur={handleBlur}
+              className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary"
+              placeholder="e.g., 3"
+            />
+          </div>
+          <div>
+            <label htmlFor="height" className="block text-sm font-medium text-gray-700 mb-2">
+              Height (inches)
+            </label>
+            <input
+              id="height"
+              type="number"
+              min="0.1"
+              step="0.1"
+              value={height}
+              onChange={(e) => handleHeightChange(e.target.value)}
+              onBlur={handleBlur}
+              className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary"
+              placeholder="e.g., 2"
+            />
+          </div>
+        </div>
+        <p className="mt-3 text-sm text-gray-500">
+          Enter your label dimensions. Products will be filtered to show compatible options.
+        </p>
       </div>
     </div>
   );

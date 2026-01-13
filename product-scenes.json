@@ -7,7 +7,11 @@
     "Do not change any text, colors, typography, layout, proportions, textures, or graphic elements.",
     "Treat the label as a fixed physical object attached to the product.",
     "Generate a realistic product photograph. Only generate the container, environment, lighting, shadows, and background.",
-    "No added label effects (no embossing, foil, glitter, or extra graphics)."
+    "No added label effects (no embossing, foil, glitter, or extra graphics).",
+    "Use vibrant, bold backgrounds with rich colors or interesting textures that create visual impact.",
+    "Apply dynamic studio lighting with depth, contrast, and dimension to make the product stand out.",
+    "Create high-impact product photography with bold visual composition that commands attention.",
+    "Avoid plain white, gray, or boring neutral backgrounds. Use colors and settings that pop."
   ],
   "mockupProducts": [
     {
@@ -24,9 +28,10 @@
         "containerDescriptor": "a realistic metal tin lid or jar lid",
         "attachmentDescriptor": "flat and centered on the top surface",
         "photoStyleDefaults": {
-          "shotType": "top-down product photo",
-          "background": "clean neutral surface",
-          "lighting": "soft studio lighting"
+          "shotType": "front 3/4 angle",
+          "background": "vibrant colored backdrop with complementary tones, or natural lifestyle setting that enhances the product",
+          "lighting": "dynamic studio lighting with depth and dimension, rim lighting to make product pop",
+          "adEnhancements": "bold visual composition, high contrast, lifestyle context or striking color that commands attention"
         }
       },
       "tags": ["round", "top-label"]
