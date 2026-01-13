@@ -13,6 +13,7 @@ export interface ProductListItem {
 export interface LabelDimensions {
   width: number;
   height: number;
+  shape?: "rectangular" | "circular";
 }
 
 interface ProductSelectorProps {
@@ -53,7 +54,7 @@ export default function ProductSelector({
     if (!filterByDimensions) return products;
 
     const productScenes = getProductScenes();
-    const { width, height } = filterByDimensions;
+    const { width, height, shape } = filterByDimensions;
 
     return products.filter((product) => {
       const scene = productScenes.mockupProducts.find(
@@ -63,8 +64,15 @@ export default function ProductSelector({
 
       const constraints = scene.labelConstraints;
 
-      // Check if product allows rectangle shapes
-      if (constraints.rectangle) {
+      // For circular labels, check circle constraints
+      if (shape === "circular" && constraints.circle) {
+        const circle = constraints.circle;
+        const diameter = width; // For circular labels, width = height = diameter
+        return diameter >= circle.minD && diameter <= circle.maxD;
+      }
+
+      // For rectangular labels, check rectangle constraints
+      if (shape === "rectangular" && constraints.rectangle) {
         const rect = constraints.rectangle;
         return (
           width >= rect.minW &&
@@ -84,7 +92,7 @@ export default function ProductSelector({
         );
       }
 
-      // If only circle constraints, don't include for rectangular labels
+      // If no matching constraints found, don't include
       return false;
     });
   }, [products, filterByDimensions]);
@@ -131,8 +139,13 @@ export default function ProductSelector({
             No products match your label dimensions
           </p>
           <p className="text-yellow-700 text-sm mt-1">
-            Try adjusting your width ({filterByDimensions.width}") or height (
-            {filterByDimensions.height}") to see available products.
+            {filterByDimensions.shape === "circular" ? (
+              <>Try adjusting your diameter ({filterByDimensions.width}") to see available products.</>
+            ) : (
+              <>
+                Try adjusting your width ({filterByDimensions.width}") or height ({filterByDimensions.height}") to see available products.
+              </>
+            )}
           </p>
         </div>
       ) : (

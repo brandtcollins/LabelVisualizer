@@ -63,10 +63,13 @@ export default function Home() {
       // Create FormData
       const formData = new FormData();
       formData.append("artwork", selectedFile);
-      formData.append(
-        "labelSize",
-        `${labelDimensions.width}x${labelDimensions.height}`
-      );
+
+      // Format label size based on shape
+      const labelSizeStr = labelDimensions.shape === "circular"
+        ? `${labelDimensions.width}d` // e.g., "3d" for 3-inch diameter
+        : `${labelDimensions.width}x${labelDimensions.height}`; // e.g., "3x2"
+
+      formData.append("labelSize", labelSizeStr);
       formData.append("productId", selectedProduct);
 
       console.log("Sending POST request to /api/generate...");
@@ -207,8 +210,10 @@ export default function Home() {
               </div>
               <div className="mt-4 text-center space-y-1">
                 <p className="text-sm text-gray-500">
-                  Label Size: {labelDimensions.width}" ×{" "}
-                  {labelDimensions.height}"
+                  Label Size:{" "}
+                  {labelDimensions.shape === "circular"
+                    ? `${labelDimensions.width}" diameter`
+                    : `${labelDimensions.width}" × ${labelDimensions.height}"`}
                 </p>
                 {mockupData && (
                   <p className="text-xs text-gray-400">

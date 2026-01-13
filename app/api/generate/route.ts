@@ -76,8 +76,8 @@ export async function POST(request: NextRequest) {
     const uploadedPath = await saveUploadedFile(buffer, artworkHash);
     console.log("Uploaded artwork saved:", uploadedPath);
 
-    // Build prompt from product scene configuration
-    const prompt = buildPromptForProduct(productScene);
+    // Build prompt from product scene configuration with label size
+    const prompt = buildPromptForProduct(productScene, labelSize);
     console.log("Generated prompt:", prompt);
 
     // Generate mockup with Gemini image generation
