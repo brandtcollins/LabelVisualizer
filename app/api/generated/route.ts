@@ -1,8 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
 import fs from 'fs/promises';
 import path from 'path';
+import { list } from '@vercel/blob';
 
 export const runtime = 'nodejs';
+
+// Check if we're in production (Vercel) or local development
+const isProduction = process.env.VERCEL === '1' || process.env.NODE_ENV === 'production';
 
 interface GeneratedImage {
   filename: string;
@@ -13,44 +17,68 @@ interface GeneratedImage {
   createdAt: string;
 }
 
+/**
+ * Parse filename to extract metadata
+ * Expected format: {artworkHash}-{labelSize}-{timestamp}.png
+ */
+function parseFilename(filename: string, url: string): GeneratedImage {
+  const baseName = filename.replace('.png', '');
+  const parts = baseName.split('-');
+
+  const timestamp = parts.length >= 3 ? parseInt(parts[parts.length - 1]) : 0;
+  const labelSize = parts.length >= 3 ? parts[parts.length - 2] : 'unknown';
+  const artworkHash = parts.slice(0, -2).join('-') || 'unknown';
+
+  return {
+    filename,
+    url,
+    timestamp,
+    artworkHash,
+    labelSize,
+    createdAt: timestamp ? new Date(timestamp).toISOString() : new Date().toISOString(),
+  };
+}
+
+/**
+ * Get images from Vercel Blob storage
+ */
+async function getImagesFromBlob(): Promise<GeneratedImage[]> {
+  const { blobs } = await list({ prefix: 'generated/' });
+
+  return blobs
+    .filter(blob => blob.pathname.endsWith('.png'))
+    .map(blob => {
+      const filename = blob.pathname.replace('generated/', '');
+      return parseFilename(filename, blob.url);
+    })
+    .sort((a, b) => b.timestamp - a.timestamp);
+}
+
+/**
+ * Get images from local filesystem
+ */
+async function getImagesFromFilesystem(): Promise<GeneratedImage[]> {
+  const generatedDir = path.join(process.cwd(), 'public', 'generated');
+
+  try {
+    await fs.access(generatedDir);
+  } catch {
+    return [];
+  }
+
+  const files = await fs.readdir(generatedDir);
+
+  return files
+    .filter(file => file.endsWith('.png'))
+    .map(filename => parseFilename(filename, `/generated/${filename}`))
+    .sort((a, b) => b.timestamp - a.timestamp);
+}
+
 export async function GET(request: NextRequest) {
   try {
-    const generatedDir = path.join(process.cwd(), 'public', 'generated');
-
-    // Ensure directory exists
-    try {
-      await fs.access(generatedDir);
-    } catch {
-      // Directory doesn't exist, return empty array
-      return NextResponse.json({ success: true, images: [] });
-    }
-
-    // Read all files from generated directory
-    const files = await fs.readdir(generatedDir);
-
-    // Filter for PNG files and parse metadata from filename
-    // Expected format: {artworkHash}-{labelSize}-{timestamp}.png
-    const images: GeneratedImage[] = files
-      .filter(file => file.endsWith('.png'))
-      .map(filename => {
-        const parts = filename.replace('.png', '').split('-');
-
-        // Extract components from filename
-        const timestamp = parts.length >= 3 ? parseInt(parts[parts.length - 1]) : 0;
-        const labelSize = parts.length >= 3 ? parts[parts.length - 2] : 'unknown';
-        const artworkHash = parts.slice(0, -2).join('-') || 'unknown';
-
-        return {
-          filename,
-          url: `/generated/${filename}`,
-          timestamp,
-          artworkHash,
-          labelSize,
-          createdAt: timestamp ? new Date(timestamp).toISOString() : new Date().toISOString(),
-        };
-      })
-      // Sort by timestamp descending (newest first)
-      .sort((a, b) => b.timestamp - a.timestamp);
+    const images = isProduction
+      ? await getImagesFromBlob()
+      : await getImagesFromFilesystem();
 
     return NextResponse.json({
       success: true,

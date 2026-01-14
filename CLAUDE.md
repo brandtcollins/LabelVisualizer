@@ -31,13 +31,16 @@ GEMINI_API_KEY=...                 # Google Gemini API key for image generation
 # Required for production (optional in dev)
 UPSTASH_REDIS_REST_URL=...         # Upstash Redis REST URL
 UPSTASH_REDIS_REST_TOKEN=...       # Upstash Redis REST token
+BLOB_READ_WRITE_TOKEN=...          # Vercel Blob storage token
 ```
 
 **Notes**:
 
 - Rate limiting is disabled if Upstash env vars are not set (dev mode allows all requests)
+- Image storage uses local filesystem in dev, Vercel Blob in production
 - Get Gemini API key at: https://ai.google.dev/
 - Get Upstash credentials at: https://console.upstash.com/ or via Vercel Marketplace
+- Add Vercel Blob via: Vercel Dashboard → Storage → Create Database → Blob
 
 ## Architecture Overview
 
@@ -48,7 +51,8 @@ UPSTASH_REDIS_REST_TOKEN=...       # Upstash Redis REST token
 - **Styling**: Tailwind CSS v4 with PostCSS
 - **AI Service**: Google Gemini API (using `gemini-2.5-flash-image` model for image generation)
 - **Image Processing**: Sharp library
-- **Storage**: Local filesystem (MVP) - production will use Azure/S3
+- **Storage**: Local filesystem (dev) / Vercel Blob (production)
+- **Rate Limiting**: Upstash Redis
 
 ### Critical Architectural Decisions
 
