@@ -72,33 +72,43 @@ export async function addLogoWatermark(
       throw new Error("Could not determine logo dimensions");
     }
 
-    // Create text SVG
-    const fontSize = 14;
+    // Load pre-rendered disclaimer text PNG (avoids font issues in serverless)
     const textPadding = 10;
-    const text = "This is a generated preview. Actual product may vary.";
+    const disclaimerPath = path.join(
+      process.cwd(),
+      "public",
+      "images",
+      "disclaimer-text.png"
+    );
 
-    // Calculate text width based on character count (approx 8px per char for 14px Arial)
-    const estimatedTextWidth = Math.ceil(text.length * 8);
-    const textWidth = Math.max(estimatedTextWidth, logoMetadata.width);
-    const textHeight = fontSize + 10;
+    // Load and apply opacity to disclaimer text
+    let textBuffer: Buffer;
+    if (opacity < 1.0) {
+      const { data, info } = await sharp(disclaimerPath)
+        .ensureAlpha()
+        .raw()
+        .toBuffer({ resolveWithObject: true });
 
-    const textSvg = `
-      <svg width="${textWidth}" height="${textHeight}">
-        <text
-          x="0"
-          y="${fontSize + 2}"
-          font-family="Arial, sans-serif"
-          font-size="${fontSize}"
-          fill="white"
-          text-anchor="start"
-          opacity="${opacity}"
-        >${text}</text>
-      </svg>
-    `;
+      for (let i = 3; i < data.length; i += 4) {
+        data[i] = Math.round(data[i] * opacity);
+      }
 
-    const textBuffer = await sharp(Buffer.from(textSvg))
-      .png()
-      .toBuffer();
+      textBuffer = await sharp(data, {
+        raw: {
+          width: info.width,
+          height: info.height,
+          channels: 4,
+        },
+      })
+        .png()
+        .toBuffer();
+    } else {
+      textBuffer = await sharp(disclaimerPath).toBuffer();
+    }
+
+    const textMetadata = await sharp(textBuffer).metadata();
+    const textWidth = textMetadata.width || 400;
+    const textHeight = textMetadata.height || 24;
 
     // Create combined watermark (logo + text) - left-aligned
     const combinedHeight = logoMetadata.height + textHeight + textPadding;
