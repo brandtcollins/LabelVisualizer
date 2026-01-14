@@ -22,18 +22,21 @@ npm run lint         # Run ESLint (uses flat config in eslint.config.mjs)
 
 ## Environment Setup
 
-Required environment variables in `.env.local`:
+Required environment variables in `.env.local` (see `.env.local.example`):
 
 ```bash
+# Required
 GEMINI_API_KEY=...                 # Google Gemini API key for image generation
-MAX_FILE_SIZE_MB=10                # Maximum upload size
 
-# Upstash Redis (for rate limiting - optional in dev, required in production)
+# Required for production (optional in dev)
 UPSTASH_REDIS_REST_URL=...         # Upstash Redis REST URL
 UPSTASH_REDIS_REST_TOKEN=...       # Upstash Redis REST token
 ```
 
-**Note**: Rate limiting is disabled if Upstash env vars are not set (dev mode allows all requests).
+**Notes**:
+- Rate limiting is disabled if Upstash env vars are not set (dev mode allows all requests)
+- Get Gemini API key at: https://ai.google.dev/
+- Get Upstash credentials at: https://console.upstash.com/ or via Vercel Marketplace
 
 ## Architecture Overview
 
@@ -214,8 +217,8 @@ This MVP demonstrates technical feasibility for an ASP.NET Core + Vue 2.7 produc
 
 ## Reference Documentation
 
-- **Full Specification**: See `ai-label-mockup-mvp.md` for comprehensive business requirements, API contracts, database schemas, and production architecture
-- **Implementation Steps**: See `implementation-steps.md` for architectural approach and design philosophy
+- **Full Specification**: See `docs/ai-label-mockup-mvp.md` for comprehensive business requirements, API contracts, database schemas, and production architecture
+- **Implementation Steps**: See `docs/implementation-steps.md` for architectural approach and design philosophy
 - **Gemini Image Generation API**: https://ai.google.dev/gemini-api/docs/image-generation
 - **Google AI SDK**: https://www.npmjs.com/package/@google/genai
 - **Next.js App Router**: https://nextjs.org/docs/app
