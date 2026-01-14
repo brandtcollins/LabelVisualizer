@@ -47,3 +47,6 @@ next-env.d.ts
 !/public/generated/.gitkeep
 cache.json
 users.json
+
+# documentation
+/docs
