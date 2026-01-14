@@ -1,15 +1,18 @@
 import { Ratelimit } from "@upstash/ratelimit";
 import { Redis } from "@upstash/redis";
 
+// Get Redis URL and token - support both Vercel's KV_* names and UPSTASH_* names
+const redisUrl = process.env.KV_REST_API_URL || process.env.UPSTASH_REDIS_REST_URL;
+const redisToken = process.env.KV_REST_API_TOKEN || process.env.UPSTASH_REDIS_REST_TOKEN;
+
 // Check if Upstash is configured
-const isConfigured =
-  process.env.UPSTASH_REDIS_REST_URL && process.env.UPSTASH_REDIS_REST_TOKEN;
+const isConfigured = redisUrl && redisToken;
 
 // Create Redis client only if configured
 const redis = isConfigured
   ? new Redis({
-      url: process.env.UPSTASH_REDIS_REST_URL!,
-      token: process.env.UPSTASH_REDIS_REST_TOKEN!,
+      url: redisUrl!,
+      token: redisToken!,
     })
   : null;
 
@@ -42,12 +45,12 @@ export async function checkRateLimit(
   // If not configured, allow all requests (development mode)
   if (!ratelimit) {
     console.warn(
-      "Rate limiting disabled: UPSTASH_REDIS_REST_URL or UPSTASH_REDIS_REST_TOKEN not set"
+      "Rate limiting disabled: Redis not configured (need KV_REST_API_URL/TOKEN or UPSTASH_REDIS_REST_URL/TOKEN)"
     );
     return {
       success: true,
-      limit: 10,
-      remaining: 10,
+      limit: 100,
+      remaining: 100,
       reset: Date.now() + 3600000,
     };
   }
