@@ -34,6 +34,7 @@ UPSTASH_REDIS_REST_TOKEN=...       # Upstash Redis REST token
 ```
 
 **Notes**:
+
 - Rate limiting is disabled if Upstash env vars are not set (dev mode allows all requests)
 - Get Gemini API key at: https://ai.google.dev/
 - Get Upstash credentials at: https://console.upstash.com/ or via Vercel Marketplace
@@ -82,20 +83,8 @@ UPSTASH_REDIS_REST_TOKEN=...       # Upstash Redis REST token
   gemini.ts          # Gemini AI integration
   imageProcessing.ts # Image hashing and file I/O utilities
   ratelimit.ts       # Upstash Redis rate limiting
-
-/types
-  index.ts           # TypeScript type definitions
+  productScenes.ts   # Product scene config and prompt builder
 ```
-
-### Key Type Definitions
-
-All types are defined in `/types/index.ts`:
-
-- **LabelSize**: `"3x2" | "4x6"` - Supported label dimensions
-- **Scene**: Product scene metadata including image paths, mask paths, label area coordinates
-- **Artwork**: Uploaded artwork with hash, dimensions, metadata
-- **Mockup**: Generated mockup with caching info, generation time
-- **GenerateRequest/Response**: API contract for mockup generation
 
 ## Implementation Status
 

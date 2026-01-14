@@ -1,7 +1,7 @@
-'use client';
+"use client";
 
-import { useState, useEffect } from 'react';
-import Link from 'next/link';
+import { useState, useEffect } from "react";
+import Link from "next/link";
 
 interface GeneratedImage {
   filename: string;
@@ -16,7 +16,9 @@ export default function GeneratedPage() {
   const [images, setImages] = useState<GeneratedImage[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [selectedImage, setSelectedImage] = useState<GeneratedImage | null>(null);
+  const [selectedImage, setSelectedImage] = useState<GeneratedImage | null>(
+    null
+  );
 
   useEffect(() => {
     fetchImages();
@@ -25,17 +27,17 @@ export default function GeneratedPage() {
   const fetchImages = async () => {
     try {
       setLoading(true);
-      const response = await fetch('/api/generated');
+      const response = await fetch("/api/generated");
       const data = await response.json();
 
       if (data.success) {
         setImages(data.images);
       } else {
-        setError(data.error || 'Failed to load images');
+        setError(data.error || "Failed to load images");
       }
     } catch (err) {
-      console.error('Error fetching images:', err);
-      setError('Failed to load images');
+      console.error("Error fetching images:", err);
+      setError("Failed to load images");
     } finally {
       setLoading(false);
     }
@@ -43,17 +45,17 @@ export default function GeneratedPage() {
 
   const formatDate = (isoString: string) => {
     const date = new Date(isoString);
-    return date.toLocaleDateString('en-US', {
-      month: 'short',
-      day: 'numeric',
-      year: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit',
+    return date.toLocaleDateString("en-US", {
+      month: "short",
+      day: "numeric",
+      year: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
     });
   };
 
   const downloadImage = (image: GeneratedImage) => {
-    const link = document.createElement('a');
+    const link = document.createElement("a");
     link.href = image.url;
     link.download = image.filename;
     document.body.appendChild(link);
@@ -86,9 +88,15 @@ export default function GeneratedPage() {
 
           <div className="flex items-center justify-between">
             <div>
-              <h1 className="text-4xl font-bold text-gray-900 mb-2">Generated Mockups</h1>
+              <h1 className="text-4xl font-bold text-gray-900 mb-2">
+                Generated Mockups
+              </h1>
               <p className="text-lg text-gray-600">
-                {loading ? 'Loading...' : `${images.length} mockup${images.length !== 1 ? 's' : ''} generated`}
+                {loading
+                  ? "Loading..."
+                  : `${images.length} mockup${
+                      images.length !== 1 ? "s" : ""
+                    } generated`}
               </p>
             </div>
 
@@ -147,8 +155,12 @@ export default function GeneratedPage() {
                 <path d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
               </svg>
             </div>
-            <h2 className="text-xl font-semibold text-gray-900 mb-2">No mockups yet</h2>
-            <p className="text-gray-600 mb-6">Generate your first mockup to see it here</p>
+            <h2 className="text-xl font-semibold text-gray-900 mb-2">
+              No mockups yet
+            </h2>
+            <p className="text-gray-600 mb-6">
+              Generate your first mockup to see it here
+            </p>
             <Link
               href="/"
               className="inline-block px-6 py-3 bg-primary text-white rounded-lg hover:bg-primary-600 transition-colors"
@@ -180,7 +192,11 @@ export default function GeneratedPage() {
                 <div className="p-4">
                   <div className="flex items-center justify-between mb-2">
                     <span className="text-xs px-2 py-1 bg-primary/10 text-primary rounded">
-                      {image.labelSize === '3x2' ? '3" × 2"' : image.labelSize === '4x6' ? '4" × 6"' : image.labelSize}
+                      {image.labelSize === "3x2"
+                        ? '3" × 2"'
+                        : image.labelSize === "4x6"
+                        ? '4" × 6"'
+                        : image.labelSize}
                     </span>
                     <button
                       onClick={(e) => {
@@ -203,7 +219,9 @@ export default function GeneratedPage() {
                       </svg>
                     </button>
                   </div>
-                  <p className="text-xs text-gray-500">{formatDate(image.createdAt)}</p>
+                  <p className="text-xs text-gray-500">
+                    {formatDate(image.createdAt)}
+                  </p>
                 </div>
               </div>
             ))}
@@ -251,11 +269,19 @@ export default function GeneratedPage() {
               <div className="p-6 border-t-2 border-gray-200">
                 <div className="flex items-center justify-between mb-4">
                   <div>
-                    <h3 className="font-semibold text-gray-900 mb-1">Mockup Details</h3>
-                    <p className="text-sm text-gray-600">Created: {formatDate(selectedImage.createdAt)}</p>
+                    <h3 className="font-semibold text-gray-900 mb-1">
+                      Mockup Details
+                    </h3>
+                    <p className="text-sm text-gray-600">
+                      Created: {formatDate(selectedImage.createdAt)}
+                    </p>
                   </div>
                   <span className="px-3 py-1.5 bg-primary/10 text-primary rounded-lg font-medium">
-                    {selectedImage.labelSize === '3x2' ? '3" × 2"' : selectedImage.labelSize === '4x6' ? '4" × 6"' : selectedImage.labelSize}
+                    {selectedImage.labelSize === "3x2"
+                      ? '3" × 2"'
+                      : selectedImage.labelSize === "4x6"
+                      ? '4" × 6"'
+                      : selectedImage.labelSize}
                   </span>
                 </div>
 
@@ -277,12 +303,12 @@ export default function GeneratedPage() {
                     </svg>
                     Download
                   </button>
-                  <button
+                  {/* <button
                     onClick={() => setSelectedImage(null)}
                     className="px-4 py-3 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors"
                   >
                     Close
-                  </button>
+                  </button> */}
                 </div>
               </div>
             </div>

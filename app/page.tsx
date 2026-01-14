@@ -25,6 +25,7 @@ export default function Home() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [mockupData, setMockupData] = useState<any>(null);
+  const [showImageModal, setShowImageModal] = useState(false);
 
   // Get product list for selector
   const products = getProductList();
@@ -65,9 +66,10 @@ export default function Home() {
       formData.append("artwork", selectedFile);
 
       // Format label size based on shape
-      const labelSizeStr = labelDimensions.shape === "circular"
-        ? `${labelDimensions.width}d` // e.g., "3d" for 3-inch diameter
-        : `${labelDimensions.width}x${labelDimensions.height}`; // e.g., "3x2"
+      const labelSizeStr =
+        labelDimensions.shape === "circular"
+          ? `${labelDimensions.width}d` // e.g., "3d" for 3-inch diameter
+          : `${labelDimensions.width}x${labelDimensions.height}`; // e.g., "3x2"
 
       formData.append("labelSize", labelSizeStr);
       formData.append("productId", selectedProduct);
@@ -110,6 +112,16 @@ export default function Home() {
       URL.revokeObjectURL(previewUrl);
       setPreviewUrl(null);
     }
+  };
+
+  const downloadImage = () => {
+    if (!mockupData?.imageUrl) return;
+    const link = document.createElement("a");
+    link.href = mockupData.imageUrl;
+    link.download = mockupData.imageUrl.split("/").pop() || "mockup.png";
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
   };
 
   return (
@@ -201,11 +213,15 @@ export default function Home() {
               <h2 className="text-2xl font-bold text-gray-900 mb-4">
                 Your Label Mockup
               </h2>
-              <div className="flex justify-center bg-gray-50 rounded-lg p-8">
+              <div
+                className="flex justify-center bg-gray-50 rounded-lg p-8 cursor-zoom-in"
+                onClick={() => setShowImageModal(true)}
+                title="Click to view full size"
+              >
                 <img
                   src={mockupData?.imageUrl || ""}
                   alt="Generated mockup"
-                  className="max-w-full h-auto max-h-96 rounded-lg shadow-md"
+                  className="max-w-full h-auto max-h-96 rounded-lg shadow-md hover:shadow-xl transition-shadow"
                 />
               </div>
               <div className="mt-4 text-center space-y-1">
@@ -215,14 +231,14 @@ export default function Home() {
                     ? `${labelDimensions.width}" diameter`
                     : `${labelDimensions.width}" × ${labelDimensions.height}"`}
                 </p>
-                {mockupData && (
+                {/* {mockupData && (
                   <p className="text-xs text-gray-400">
                     {mockupData.cached
                       ? "✓ Retrieved from cache"
                       : "✓ Newly generated"}
                     {mockupData.message && ` • ${mockupData.message}`}
                   </p>
-                )}
+                )} */}
               </div>
             </div>
 
@@ -240,9 +256,99 @@ export default function Home() {
               >
                 View All Mockups
               </Link>
-              <button className="py-3 px-6 bg-primary text-white rounded-lg font-medium hover:bg-primary-600 transition-colors">
+              <button
+                onClick={downloadImage}
+                className="py-3 px-6 bg-primary text-white rounded-lg font-medium hover:bg-primary-600 transition-colors"
+              >
                 Download Mockup
               </button>
+            </div>
+          </div>
+        )}
+
+        {/* Modal for Full Image View */}
+        {showImageModal && mockupData?.imageUrl && (
+          <div
+            className="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4"
+            onClick={() => setShowImageModal(false)}
+          >
+            <div
+              className="relative max-w-5xl w-full bg-white rounded-xl overflow-hidden"
+              onClick={(e) => e.stopPropagation()}
+            >
+              {/* Close Button */}
+              <button
+                onClick={() => setShowImageModal(false)}
+                className="absolute top-4 right-4 z-10 p-2 bg-white rounded-full shadow-lg hover:bg-gray-100 transition-colors"
+              >
+                <svg
+                  className="w-6 h-6 text-gray-600"
+                  fill="none"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth="2"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+
+              {/* Image */}
+              <div className="bg-gray-50 p-8">
+                <img
+                  src={mockupData.imageUrl}
+                  alt="Generated mockup"
+                  className="w-full h-auto max-h-[70vh] object-contain mx-auto"
+                />
+              </div>
+
+              {/* Details */}
+              <div className="p-6 border-t-2 border-gray-200">
+                <div className="flex items-center justify-between mb-4">
+                  <div>
+                    <h3 className="font-semibold text-gray-900 mb-1">
+                      Mockup Details
+                    </h3>
+                    <p className="text-sm text-gray-600">
+                      {mockupData.cached
+                        ? "Retrieved from cache"
+                        : "Newly generated"}
+                    </p>
+                  </div>
+                  <span className="px-3 py-1.5 bg-primary/10 text-primary rounded-lg font-medium">
+                    {labelDimensions.shape === "circular"
+                      ? `${labelDimensions.width}" diameter`
+                      : `${labelDimensions.width}" × ${labelDimensions.height}"`}
+                  </span>
+                </div>
+
+                <div className="flex gap-3">
+                  <button
+                    onClick={downloadImage}
+                    className="flex-1 px-4 py-3 bg-primary text-white rounded-lg hover:bg-primary-600 transition-colors flex items-center justify-center gap-2"
+                  >
+                    <svg
+                      className="w-5 h-5"
+                      fill="none"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth="2"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                    >
+                      <path d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                    </svg>
+                    Download
+                  </button>
+                  {/* <button
+                    onClick={() => setShowImageModal(false)}
+                    className="px-4 py-3 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors"
+                  >
+                    Close
+                  </button> */}
+                </div>
+              </div>
             </div>
           </div>
         )}
