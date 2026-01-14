@@ -6,8 +6,6 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 This is an AI-powered label mockup generator MVP built with Next.js. The application allows users to upload custom label artwork and visualize it on real product scenes using Google Gemini's image generation API. This MVP serves as a proof-of-concept to demonstrate technical feasibility before a production ASP.NET/Vue implementation.
 
-**Business Goal**: Convert organic traffic into qualified leads at $3-5 per lead (vs. $60-80 Google Ads cost) by providing a compelling visualization tool.
-
 ## Development Commands
 
 ```bash
@@ -40,6 +38,7 @@ UPSTASH_REDIS_REST_TOKEN=...       # Upstash Redis REST token
 ## Architecture Overview
 
 ### Tech Stack
+
 - **Framework**: Next.js 16.1.1 with App Router
 - **Language**: TypeScript (strict mode enabled)
 - **Styling**: Tailwind CSS v4 with PostCSS
@@ -98,6 +97,7 @@ All types are defined in `/types/index.ts`:
 ## Implementation Status
 
 **Implemented (MVP Complete)**:
+
 - ✅ Next.js setup with TypeScript and Tailwind CSS
 - ✅ File upload component with drag-and-drop (PNG/JPEG support)
 - ✅ Label size selector component
@@ -108,6 +108,7 @@ All types are defined in `/types/index.ts`:
 - ✅ Preview and download functionality
 
 **Future Enhancements**:
+
 - Caching layer to reduce API costs on repeated generations
 - User authentication
 - Multiple product type options (currently hardcoded to "candle")
@@ -115,8 +116,9 @@ All types are defined in `/types/index.ts`:
 - Download with watermark for non-authenticated users
 
 **Rate Limiting** (implemented):
+
 - Uses Upstash Redis for serverless-compatible rate limiting
-- 10 requests per hour per IP address
+- 100 requests per hour per IP address
 - Returns 429 status with reset time when exceeded
 - Gracefully disabled in dev if Upstash env vars not set
 
@@ -127,7 +129,7 @@ All types are defined in `/types/index.ts`:
 API routes must export named functions (`GET`, `POST`, etc.) and return `NextResponse` objects:
 
 ```typescript
-import { NextRequest, NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from "next/server";
 
 export async function POST(request: NextRequest) {
   // Implementation
@@ -138,6 +140,7 @@ export async function POST(request: NextRequest) {
 ### Image Processing
 
 The app uses Node.js built-in `crypto` module for hashing and file I/O:
+
 - MD5 hashing for artwork deduplication and cache keys
 - File validation: PNG/JPEG format, 10MB max size
 - Filesystem storage in `/public/uploads` and `/public/generated`
@@ -149,13 +152,13 @@ The critical Gemini API call pattern (see `lib/gemini.ts`):
 
 ```typescript
 const response = await genai.models.generateContent({
-  model: 'gemini-2.5-flash-image',
+  model: "gemini-2.5-flash-image",
   contents: [
-    { text: prompt },  // Strict prompt preserving label artwork
+    { text: prompt }, // Strict prompt preserving label artwork
     {
       inlineData: {
         mimeType: artworkFile.type,
-        data: base64Image,  // User's uploaded label
+        data: base64Image, // User's uploaded label
       },
     },
   ],
