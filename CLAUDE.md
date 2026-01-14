@@ -28,6 +28,9 @@ Required environment variables in `.env.local` (see `.env.local.example`):
 # Required
 GEMINI_API_KEY=...                 # Google Gemini API key for image generation
 
+# Optional (if set, requires password to use the generator)
+DEMO_PASSWORD=...                  # Password for demo access
+
 # Required for production (auto-injected by Vercel Marketplace)
 KV_REST_API_URL=...                # Upstash Redis REST URL
 KV_REST_API_TOKEN=...              # Upstash Redis REST token

@@ -11,10 +11,26 @@ import { checkRateLimit, getClientIp } from "@/lib/ratelimit";
 
 export const runtime = "nodejs";
 
+// Check if password protection is enabled
+const isPasswordProtected = !!process.env.DEMO_PASSWORD;
+
 export async function POST(request: NextRequest) {
   const startTime = Date.now();
 
   try {
+    const formData = await request.formData();
+
+    // Password check (if DEMO_PASSWORD is set)
+    if (isPasswordProtected) {
+      const password = formData.get("password") as string;
+      if (password !== process.env.DEMO_PASSWORD) {
+        return NextResponse.json(
+          { success: false, error: "Invalid password" },
+          { status: 401 }
+        );
+      }
+    }
+
     // Rate limiting check
     const clientIp = getClientIp(request);
     const rateLimitResult = await checkRateLimit(clientIp);
@@ -37,7 +53,6 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const formData = await request.formData();
     const artworkFile = formData.get("artwork") as File;
     const labelSize = formData.get("labelSize") as string;
     const productId = formData.get("productId") as string;

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import LabelSizeSelector, {
   LabelDimensions,
@@ -8,8 +8,11 @@ import LabelSizeSelector, {
 import FileUpload from "./components/FileUpload";
 import ProductSelector from "./components/ProductSelector";
 import { getProductList } from "@/lib/productScenes";
+import { useAuth } from "./hooks/useAuth";
 
 export default function Home() {
+  const { isAuthenticated, isLoading: authLoading, isProtected, getPassword, requireAuth } = useAuth();
+
   const [labelDimensions, setLabelDimensions] = useState<LabelDimensions>({
     width: 3,
     height: 2,
@@ -26,6 +29,13 @@ export default function Home() {
   const [error, setError] = useState<string | null>(null);
   const [mockupData, setMockupData] = useState<any>(null);
   const [showImageModal, setShowImageModal] = useState(false);
+
+  // Redirect to login if not authenticated
+  useEffect(() => {
+    if (!authLoading) {
+      requireAuth();
+    }
+  }, [authLoading, isAuthenticated, isProtected]);
 
   // Get product list for selector
   const products = getProductList();
@@ -73,6 +83,12 @@ export default function Home() {
 
       formData.append("labelSize", labelSizeStr);
       formData.append("productId", selectedProduct);
+
+      // Include password from session if protected
+      const storedPassword = getPassword();
+      if (storedPassword) {
+        formData.append("password", storedPassword);
+      }
 
       console.log("Sending POST request to /api/generate...");
 
@@ -123,6 +139,18 @@ export default function Home() {
     link.click();
     document.body.removeChild(link);
   };
+
+  // Show loading while checking auth
+  if (authLoading) {
+    return (
+      <main className="min-h-screen bg-gradient-to-b from-gray-50 to-white flex items-center justify-center">
+        <div className="text-center">
+          <div className="inline-block animate-spin h-12 w-12 border-4 border-primary border-t-transparent rounded-full mb-4"></div>
+          <p className="text-gray-600">Loading...</p>
+        </div>
+      </main>
+    );
+  }
 
   return (
     <main className="min-h-screen bg-gradient-to-b from-gray-50 to-white py-12">
