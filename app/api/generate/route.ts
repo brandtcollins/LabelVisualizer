@@ -7,6 +7,7 @@ import {
 } from "@/lib/imageProcessing";
 import { getProductSceneById, buildPromptForProduct } from "@/lib/productScenes";
 import { addLogoWatermark } from "@/lib/watermark";
+import { checkRateLimit, getClientIp } from "@/lib/ratelimit";
 
 export const runtime = "nodejs";
 
@@ -14,6 +15,28 @@ export async function POST(request: NextRequest) {
   const startTime = Date.now();
 
   try {
+    // Rate limiting check
+    const clientIp = getClientIp(request);
+    const rateLimitResult = await checkRateLimit(clientIp);
+
+    if (!rateLimitResult.success) {
+      const resetDate = new Date(rateLimitResult.reset);
+      return NextResponse.json(
+        {
+          success: false,
+          error: `Rate limit exceeded. Try again after ${resetDate.toLocaleTimeString()}.`,
+        },
+        {
+          status: 429,
+          headers: {
+            "X-RateLimit-Limit": rateLimitResult.limit.toString(),
+            "X-RateLimit-Remaining": rateLimitResult.remaining.toString(),
+            "X-RateLimit-Reset": rateLimitResult.reset.toString(),
+          },
+        }
+      );
+    }
+
     const formData = await request.formData();
     const artworkFile = formData.get("artwork") as File;
     const labelSize = formData.get("labelSize") as string;

@@ -28,10 +28,14 @@ Required environment variables in `.env.local`:
 
 ```bash
 GEMINI_API_KEY=...                 # Google Gemini API key for image generation
-# OPENAI_API_KEY=sk-...            # (Deprecated) OpenAI API key - switched to Gemini
 MAX_FILE_SIZE_MB=10                # Maximum upload size
-DAILY_GENERATION_LIMIT=5           # Rate limit per user
+
+# Upstash Redis (for rate limiting - optional in dev, required in production)
+UPSTASH_REDIS_REST_URL=...         # Upstash Redis REST URL
+UPSTASH_REDIS_REST_TOKEN=...       # Upstash Redis REST token
 ```
+
+**Note**: Rate limiting is disabled if Upstash env vars are not set (dev mode allows all requests).
 
 ## Architecture Overview
 
@@ -75,6 +79,7 @@ DAILY_GENERATION_LIMIT=5           # Rate limit per user
 /lib
   gemini.ts          # Gemini AI integration
   imageProcessing.ts # Image hashing and file I/O utilities
+  ratelimit.ts       # Upstash Redis rate limiting
 
 /types
   index.ts           # TypeScript type definitions
@@ -104,10 +109,16 @@ All types are defined in `/types/index.ts`:
 
 **Future Enhancements**:
 - Caching layer to reduce API costs on repeated generations
-- User authentication and rate limiting
+- User authentication
 - Multiple product type options (currently hardcoded to "candle")
 - Email capture and lead generation integration
 - Download with watermark for non-authenticated users
+
+**Rate Limiting** (implemented):
+- Uses Upstash Redis for serverless-compatible rate limiting
+- 10 requests per hour per IP address
+- Returns 429 status with reset time when exceeded
+- Gracefully disabled in dev if Upstash env vars not set
 
 ## Important Implementation Notes
 
