@@ -192,11 +192,7 @@ export default function GeneratedPage() {
                 <div className="p-4">
                   <div className="flex items-center justify-between mb-2">
                     <span className="text-xs px-2 py-1 bg-primary/10 text-primary rounded">
-                      {image.labelSize === "3x2"
-                        ? '3" × 2"'
-                        : image.labelSize === "4x6"
-                        ? '4" × 6"'
-                        : image.labelSize}
+                      {image.labelSize}
                     </span>
                     <button
                       onClick={(e) => {

@@ -1,5 +1,4 @@
 {
-  "version": "1.0",
   "units": "in",
   "globalPromptRules": [
     "The label is already printed and finished.",
@@ -114,7 +113,6 @@
         "minH": 1.5,
         "maxH": 3.0
       },
-      "preferredSkus": ["OL996"],
       "prompt": {
         "productNoun": "clamshell",
         "containerDescriptor": "a realistic clear plastic wax melt clamshell package",
@@ -126,6 +124,29 @@
         }
       },
       "tags": ["wax-melt", "clear-plastic", "OL996"]
+    },
+    {
+      "id": "jar_candle",
+      "name": "Jar Candle",
+      "category": "candles",
+      "allowedShapes": ["rectangle"],
+      "labelConstraints": {
+        "minW": 2.0,
+        "maxW": 4.0,
+        "minH": 3.0,
+        "maxH": 5.0
+      },
+      "prompt": {
+        "productNoun": "jar candle",
+        "containerDescriptor": "a realistic glass jar candle with white soy wax, either with a silver metal screw-top lid or without a lid showing the wax surface",
+        "attachmentDescriptor": "applied flat on the front curved surface of the jar, centered vertically and wrapping slightly around the cylindrical shape with natural perspective",
+        "photoStyleDefaults": {
+          "shotType": "front-facing product photo at eye level",
+          "background": "warm lifestyle setting such as wood table, cozy interior, or natural textures like burlap/linen, bokeh lights optional",
+          "lighting": "soft natural or warm studio lighting with subtle highlights on the glass"
+        }
+      },
+      "tags": ["jar-candle", "glass-jar", "soy-wax", "scented-candle"]
     },
     {
       "id": "dropper_bottle",
