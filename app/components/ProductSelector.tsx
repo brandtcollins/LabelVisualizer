@@ -205,7 +205,7 @@ export default function ProductSelector({
               </ComboboxButton>
             </div>
 
-            <ComboboxOptions className="absolute z-20 w-full mt-2 bg-white border-2 border-gray-200 rounded-xl shadow-xl max-h-[min(400px,60vh)] overflow-y-auto">
+            <ComboboxOptions className="absolute z-20 w-full bottom-full mb-2 bg-white border-2 border-gray-200 rounded-xl shadow-xl max-h-[min(400px,60vh)] overflow-y-auto">
               {!hasFilteredProducts ? (
                 <div className="px-4 py-8 text-center text-gray-500">
                   No products found for "{query}"

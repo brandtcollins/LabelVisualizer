@@ -15,7 +15,13 @@ import { getProductList } from "@/lib/productScenes";
 import { useAuth } from "./hooks/useAuth";
 
 export default function Home() {
-  const { isAuthenticated, isLoading: authLoading, isProtected, getPassword, requireAuth } = useAuth();
+  const {
+    isAuthenticated,
+    isLoading: authLoading,
+    isProtected,
+    getPassword,
+    requireAuth,
+  } = useAuth();
 
   const [labelDimensions, setLabelDimensions] = useState<LabelDimensions>({
     width: 3,
@@ -33,10 +39,12 @@ export default function Home() {
   const [error, setError] = useState<string | null>(null);
   const [mockupData, setMockupData] = useState<any>(null);
   const [showImageModal, setShowImageModal] = useState(false);
-  const [watermarkSettings, setWatermarkSettings] = useState<WatermarkSettings>({
-    enabled: true,
-    selectedId: WATERMARK_OPTIONS[0].id,
-  });
+  const [watermarkSettings, setWatermarkSettings] = useState<WatermarkSettings>(
+    {
+      enabled: true,
+      selectedId: WATERMARK_OPTIONS[0].id,
+    }
+  );
 
   // Redirect to login if not authenticated
   useEffect(() => {
@@ -194,15 +202,14 @@ export default function Home() {
               onDimensionsFinalized={handleDimensionsFinalized}
             />
 
+            <WatermarkSelector
+              settings={watermarkSettings}
+              onChange={setWatermarkSettings}
+            />
             <ProductSelector
               selected={selectedProduct}
               onChange={setSelectedProduct}
               products={products}
-            />
-
-            <WatermarkSelector
-              settings={watermarkSettings}
-              onChange={setWatermarkSettings}
             />
 
             {/* Generate Button */}
