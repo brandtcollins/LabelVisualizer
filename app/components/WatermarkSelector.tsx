@@ -22,11 +22,6 @@ export const WATERMARK_OPTIONS: WatermarkOption[] = [
     path: "/images/ol-logo-white.svg",
   },
   {
-    id: "olg-watermark",
-    name: "OLG Watermark",
-    path: "/images/olg-watermark-white.png",
-  },
-  {
     id: "olg-step-repeat",
     name: "OLG Step & Repeat Pattern",
     path: "/images/olg-watermark-white.png",
