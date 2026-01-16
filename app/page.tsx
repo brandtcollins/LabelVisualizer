@@ -7,6 +7,10 @@ import LabelSizeSelector, {
 } from "./components/LabelSizeSelector";
 import FileUpload from "./components/FileUpload";
 import ProductSelector from "./components/ProductSelector";
+import WatermarkSelector, {
+  WatermarkSettings,
+  WATERMARK_OPTIONS,
+} from "./components/WatermarkSelector";
 import { getProductList } from "@/lib/productScenes";
 import { useAuth } from "./hooks/useAuth";
 
@@ -29,6 +33,10 @@ export default function Home() {
   const [error, setError] = useState<string | null>(null);
   const [mockupData, setMockupData] = useState<any>(null);
   const [showImageModal, setShowImageModal] = useState(false);
+  const [watermarkSettings, setWatermarkSettings] = useState<WatermarkSettings>({
+    enabled: true,
+    selectedId: WATERMARK_OPTIONS[0].id,
+  });
 
   // Redirect to login if not authenticated
   useEffect(() => {
@@ -88,6 +96,12 @@ export default function Home() {
       const storedPassword = getPassword();
       if (storedPassword) {
         formData.append("password", storedPassword);
+      }
+
+      // Include watermark settings
+      formData.append("watermarkEnabled", String(watermarkSettings.enabled));
+      if (watermarkSettings.enabled && watermarkSettings.selectedId) {
+        formData.append("watermarkId", watermarkSettings.selectedId);
       }
 
       console.log("Sending POST request to /api/generate...");
@@ -185,6 +199,11 @@ export default function Home() {
               onChange={setSelectedProduct}
               products={products}
               filterByDimensions={dimensionsFilter}
+            />
+
+            <WatermarkSelector
+              settings={watermarkSettings}
+              onChange={setWatermarkSettings}
             />
 
             {/* Generate Button */}

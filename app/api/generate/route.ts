@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import path from "path";
 import { generateProductMockup } from "@/lib/gemini";
 import {
   hashBuffer,
@@ -6,8 +7,14 @@ import {
   saveBufferImage,
 } from "@/lib/imageProcessing";
 import { getProductSceneById, buildPromptForProduct } from "@/lib/productScenes";
-import { addLogoWatermark } from "@/lib/watermark";
+import { addLogoWatermark, addStepAndRepeatWatermark } from "@/lib/watermark";
 import { checkRateLimit, getClientIp } from "@/lib/ratelimit";
+
+// Watermark options mapping (must match WatermarkSelector.tsx)
+const WATERMARK_PATHS: Record<string, string> = {
+  "ol-logo": path.join(process.cwd(), "public", "images", "ol-logo-white.svg"),
+  "olg-watermark": path.join(process.cwd(), "public", "images", "olg-watermark-white.png"),
+};
 
 export const runtime = "nodejs";
 
@@ -56,6 +63,8 @@ export async function POST(request: NextRequest) {
     const artworkFile = formData.get("artwork") as File;
     const labelSize = formData.get("labelSize") as string;
     const productId = formData.get("productId") as string;
+    const watermarkEnabled = formData.get("watermarkEnabled") === "true";
+    const watermarkId = formData.get("watermarkId") as string | null;
 
     console.log("=== API Generate Request ===");
     console.log("File name:", artworkFile?.name);
@@ -63,6 +72,8 @@ export async function POST(request: NextRequest) {
     console.log("File type:", artworkFile?.type);
     console.log("Label size:", labelSize);
     console.log("Product ID:", productId);
+    console.log("Watermark enabled:", watermarkEnabled);
+    console.log("Watermark ID:", watermarkId);
 
     // Validate required fields
     if (!artworkFile || !labelSize || !productId) {
@@ -121,18 +132,42 @@ export async function POST(request: NextRequest) {
 
     // Generate mockup with Gemini image generation
     const base64Image = await generateProductMockup(artworkFile, prompt);
-    console.log("Gemini image generated, applying watermark...");
+    console.log("Gemini image generated");
 
-    // Apply watermark with text to generated image
-    const watermarkedBuffer = await addLogoWatermark(base64Image, {
-      padding: 20,
-      opacity: 0.35,
-    });
+    // Conditionally apply watermark
+    let finalImageBuffer: Buffer;
+    if (watermarkEnabled && watermarkId) {
+      if (watermarkId === "olg-step-repeat") {
+        // Apply step and repeat pattern
+        console.log("Applying step and repeat watermark");
+        finalImageBuffer = await addStepAndRepeatWatermark(base64Image, {
+          logoPath: WATERMARK_PATHS["olg-watermark"],
+          logoWidth: 112,
+          opacity: 0.15,
+          spacing: 25,
+          angle: -30,
+        });
+      } else if (WATERMARK_PATHS[watermarkId]) {
+        // Apply single logo watermark
+        console.log("Applying watermark:", watermarkId);
+        finalImageBuffer = await addLogoWatermark(base64Image, {
+          logoPath: WATERMARK_PATHS[watermarkId],
+          padding: 20,
+          opacity: 0.35,
+        });
+      } else {
+        console.log("Unknown watermark ID, saving without watermark");
+        finalImageBuffer = Buffer.from(base64Image, "base64");
+      }
+    } else {
+      console.log("Watermark disabled, saving without watermark");
+      finalImageBuffer = Buffer.from(base64Image, "base64");
+    }
 
-    // Save watermarked image with timestamp to prevent overwrites
+    // Save image with timestamp to prevent overwrites
     const timestamp = Date.now();
     const filename = `${artworkHash}-${labelSize}-${timestamp}.png`;
-    const savedUrl = await saveBufferImage(watermarkedBuffer, filename);
+    const savedUrl = await saveBufferImage(finalImageBuffer, filename);
 
     const generationTime = (Date.now() - startTime) / 1000;
     console.log(`Total generation time: ${generationTime.toFixed(2)}s`);
