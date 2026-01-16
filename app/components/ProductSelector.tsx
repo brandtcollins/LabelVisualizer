@@ -1,6 +1,13 @@
 "use client";
 
-import { useState, useMemo, useRef, useEffect } from "react";
+import { useState, useMemo, Fragment } from "react";
+import {
+  Combobox,
+  ComboboxInput,
+  ComboboxButton,
+  ComboboxOptions,
+  ComboboxOption,
+} from "@headlessui/react";
 import { getProductScenes } from "@/lib/productScenes";
 
 export interface ProductListItem {
@@ -29,28 +36,10 @@ export default function ProductSelector({
   products,
   filterByDimensions,
 }: ProductSelectorProps) {
-  const [isOpen, setIsOpen] = useState(false);
-  const [dropdownPosition, setDropdownPosition] = useState<'below' | 'above'>('below');
-  const buttonRef = useRef<HTMLButtonElement>(null);
-
-  useEffect(() => {
-    if (isOpen && buttonRef.current) {
-      const buttonRect = buttonRef.current.getBoundingClientRect();
-      const viewportHeight = window.innerHeight;
-      const spaceBelow = viewportHeight - buttonRect.bottom;
-      const spaceAbove = buttonRect.top;
-
-      // If less than 300px below, try to position above
-      if (spaceBelow < 300 && spaceAbove > spaceBelow) {
-        setDropdownPosition('above');
-      } else {
-        setDropdownPosition('below');
-      }
-    }
-  }, [isOpen]);
+  const [query, setQuery] = useState("");
 
   // Filter products based on dimensions
-  const filteredProducts = useMemo(() => {
+  const dimensionFilteredProducts = useMemo(() => {
     if (!filterByDimensions) return products;
 
     const productScenes = getProductScenes();
@@ -64,14 +53,12 @@ export default function ProductSelector({
 
       const constraints = scene.labelConstraints;
 
-      // For circular labels, check circle constraints
       if (shape === "circular" && constraints.circle) {
         const circle = constraints.circle;
-        const diameter = width; // For circular labels, width = height = diameter
+        const diameter = width;
         return diameter >= circle.minD && diameter <= circle.maxD;
       }
 
-      // For rectangular labels, check rectangle constraints
       if (shape === "rectangular" && constraints.rectangle) {
         const rect = constraints.rectangle;
         return (
@@ -82,7 +69,6 @@ export default function ProductSelector({
         );
       }
 
-      // Check flat constraints (no shape specification)
       if (constraints.minW !== undefined && constraints.maxW !== undefined) {
         return (
           width >= constraints.minW &&
@@ -92,12 +78,25 @@ export default function ProductSelector({
         );
       }
 
-      // If no matching constraints found, don't include
       return false;
     });
   }, [products, filterByDimensions]);
 
-  const selectedProduct = filteredProducts.find((p) => p.id === selected);
+  // Filter products based on search query
+  const filteredProducts = useMemo(() => {
+    if (query === "") return dimensionFilteredProducts;
+
+    const lowerQuery = query.toLowerCase();
+    return dimensionFilteredProducts.filter((product) => {
+      return (
+        product.name.toLowerCase().includes(lowerQuery) ||
+        product.category.toLowerCase().includes(lowerQuery) ||
+        product.tags?.some((tag) => tag.toLowerCase().includes(lowerQuery))
+      );
+    });
+  }, [dimensionFilteredProducts, query]);
+
+  const selectedProduct = products.find((p) => p.id === selected);
 
   // Group filtered products by category
   const groupedProducts = filteredProducts.reduce((acc, product) => {
@@ -121,43 +120,53 @@ export default function ProductSelector({
 
   const hasFilteredProducts = Object.keys(groupedProducts).length > 0;
 
+  const handleChange = (product: ProductListItem | null) => {
+    if (product) {
+      onChange(product.id);
+      setQuery("");
+    }
+  };
+
   return (
     <div className="w-full">
       <h2 className="text-xl font-semibold text-gray-800 mb-4">
         Select Product Type
         {filterByDimensions && (
           <span className="ml-2 text-sm font-normal text-gray-500">
-            ({filteredProducts.length} compatible product
-            {filteredProducts.length !== 1 ? "s" : ""})
+            ({dimensionFilteredProducts.length} compatible product
+            {dimensionFilteredProducts.length !== 1 ? "s" : ""})
           </span>
         )}
       </h2>
 
-      {!hasFilteredProducts && filterByDimensions ? (
+      {!dimensionFilteredProducts.length && filterByDimensions ? (
         <div className="bg-yellow-50 border-2 border-yellow-200 rounded-xl p-4">
           <p className="text-yellow-800 font-medium">
             No products match your label dimensions
           </p>
           <p className="text-yellow-700 text-sm mt-1">
             {filterByDimensions.shape === "circular" ? (
-              <>Try adjusting your diameter ({filterByDimensions.width}") to see available products.</>
+              <>
+                Try adjusting your diameter ({filterByDimensions.width}") to see
+                available products.
+              </>
             ) : (
               <>
-                Try adjusting your width ({filterByDimensions.width}") or height ({filterByDimensions.height}") to see available products.
+                Try adjusting your width ({filterByDimensions.width}") or height
+                ({filterByDimensions.height}") to see available products.
               </>
             )}
           </p>
         </div>
       ) : (
-        <div className="relative">
-          <button
-            ref={buttonRef}
-            type="button"
-            onClick={() => setIsOpen(!isOpen)}
-            className="w-full bg-white border-2 border-gray-300 rounded-xl p-4 text-left flex items-center justify-between hover:border-primary-300 transition-colors focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary"
-          >
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-primary/10 rounded-lg flex items-center justify-center">
+        <Combobox
+          value={selectedProduct || null}
+          onChange={handleChange}
+          onClose={() => setQuery("")}
+        >
+          <div className="relative">
+            <div className="w-full bg-white border-2 border-gray-300 rounded-xl p-4 flex items-center gap-3 hover:border-primary-300 transition-colors focus-within:ring-2 focus-within:ring-primary focus-within:border-primary">
+              {/* <div className="w-10 h-10 bg-primary/10 rounded-lg flex items-center justify-center flex-shrink-0">
                 <svg
                   className="w-6 h-6 text-primary"
                   fill="none"
@@ -169,91 +178,89 @@ export default function ProductSelector({
                 >
                   <path d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
                 </svg>
+              </div> */}
+              <div className="flex-1 min-w-0">
+                {/* <p className="text-sm text-gray-500">Product Type</p> */}
+                <ComboboxInput
+                  className="w-full font-semibold text-gray-900 bg-transparent border-none outline-none placeholder:text-gray-400 placeholder:font-normal"
+                  placeholder="Search or select a product..."
+                  displayValue={(product: ProductListItem | null) =>
+                    product?.name || ""
+                  }
+                  onChange={(e) => setQuery(e.target.value)}
+                />
               </div>
-              <div>
-                <p className="text-sm text-gray-500">Product Type</p>
-                <p className="font-semibold text-gray-900">
-                  {selectedProduct?.name || "Select a product"}
-                </p>
-              </div>
+              <ComboboxButton className="flex-shrink-0 p-1">
+                <svg
+                  className="w-5 h-5 text-gray-400"
+                  fill="none"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth="2"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path d="M19 9l-7 7-7-7" />
+                </svg>
+              </ComboboxButton>
             </div>
-            <svg
-              className={`w-5 h-5 text-gray-400 transition-transform ${
-                isOpen ? "rotate-180" : ""
-              }`}
-              fill="none"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth="2"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-            >
-              <path d="M19 9l-7 7-7-7" />
-            </svg>
-          </button>
 
-          {isOpen && (
-            <>
-              {/* Backdrop */}
-              <div
-                className="fixed inset-0 z-10"
-                onClick={() => setIsOpen(false)}
-              />
-
-              {/* Dropdown */}
-              <div className={`absolute z-20 w-full bg-white border-2 border-gray-200 rounded-xl shadow-xl max-h-[min(400px,60vh)] overflow-y-auto ${
-                dropdownPosition === 'above' ? 'bottom-full mb-2' : 'top-full mt-2'
-              }`}>
-                {Object.entries(groupedProducts).map(
+            <ComboboxOptions className="absolute z-20 w-full mt-2 bg-white border-2 border-gray-200 rounded-xl shadow-xl max-h-[min(400px,60vh)] overflow-y-auto">
+              {!hasFilteredProducts ? (
+                <div className="px-4 py-8 text-center text-gray-500">
+                  No products found for "{query}"
+                </div>
+              ) : (
+                Object.entries(groupedProducts).map(
                   ([category, categoryProducts]) => (
                     <div
                       key={category}
                       className="border-b border-gray-100 last:border-0"
                     >
-                      <div className="px-4 py-4 bg-gray-50 text-xs font-semibold text-gray-800 uppercase tracking-wider sticky top-0">
+                      <div className="px-4 py-3 bg-gray-50 text-xs font-semibold text-gray-800 uppercase tracking-wider sticky top-0">
                         {categoryLabels[category] || category}
                       </div>
                       {categoryProducts.map((product) => (
-                        <button
+                        <ComboboxOption
                           key={product.id}
-                          type="button"
-                          onClick={() => {
-                            onChange(product.id);
-                            setIsOpen(false);
-                          }}
-                          className={`w-full px-4 py-3 text-left hover:bg-primary/5 transition-colors ${
-                            selected === product.id ? "bg-primary/10" : ""
-                          }`}
+                          value={product}
+                          as={Fragment}
                         >
-                          <div className="flex items-center justify-between">
-                            <div>
-                              <p className="font-medium text-gray-900">
-                                {product.name}
-                              </p>
+                          {({ active, selected: isSelected }) => (
+                            <div
+                              className={`w-full px-4 py-3 cursor-pointer transition-colors ${
+                                active ? "bg-primary/10" : ""
+                              } ${isSelected ? "bg-primary/5" : ""}`}
+                            >
+                              <div className="flex items-center justify-between">
+                                <p className="font-medium text-gray-900">
+                                  {product.name}
+                                </p>
+                                {isSelected && (
+                                  <svg
+                                    className="w-5 h-5 text-primary flex-shrink-0"
+                                    fill="none"
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                    strokeWidth="2"
+                                    viewBox="0 0 24 24"
+                                    stroke="currentColor"
+                                  >
+                                    <path d="M5 13l4 4L19 7" />
+                                  </svg>
+                                )}
+                              </div>
                             </div>
-                            {selected === product.id && (
-                              <svg
-                                className="w-5 h-5 text-primary flex-shrink-0"
-                                fill="none"
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                strokeWidth="2"
-                                viewBox="0 0 24 24"
-                                stroke="currentColor"
-                              >
-                                <path d="M5 13l4 4L19 7" />
-                              </svg>
-                            )}
-                          </div>
-                        </button>
+                          )}
+                        </ComboboxOption>
                       ))}
                     </div>
                   )
-                )}
-              </div>
-            </>
-          )}
-        </div>
+                )
+              )}
+            </ComboboxOptions>
+          </div>
+        </Combobox>
       )}
     </div>
   );
