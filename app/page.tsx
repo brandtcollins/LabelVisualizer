@@ -198,7 +198,6 @@ export default function Home() {
               selected={selectedProduct}
               onChange={setSelectedProduct}
               products={products}
-              filterByDimensions={dimensionsFilter}
             />
 
             <WatermarkSelector

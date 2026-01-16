@@ -32,15 +32,28 @@ export default function LabelSizeSelector({
       // For circular labels, set width = height = diameter
       const diameterNum = parseFloat(diameter);
       if (!isNaN(diameterNum) && diameterNum > 0) {
-        const dims: LabelDimensions = { width: diameterNum, height: diameterNum, shape: "circular" };
+        const dims: LabelDimensions = {
+          width: diameterNum,
+          height: diameterNum,
+          shape: "circular",
+        };
         onChange(dims);
       }
     } else {
       // For rectangular labels, use existing width/height
       const widthNum = parseFloat(width);
       const heightNum = parseFloat(height);
-      if (!isNaN(widthNum) && widthNum > 0 && !isNaN(heightNum) && heightNum > 0) {
-        const dims: LabelDimensions = { width: widthNum, height: heightNum, shape: "rectangular" };
+      if (
+        !isNaN(widthNum) &&
+        widthNum > 0 &&
+        !isNaN(heightNum) &&
+        heightNum > 0
+      ) {
+        const dims: LabelDimensions = {
+          width: widthNum,
+          height: heightNum,
+          shape: "rectangular",
+        };
         onChange(dims);
       }
     }
@@ -50,7 +63,11 @@ export default function LabelSizeSelector({
     setDiameter(value);
     const numValue = parseFloat(value);
     if (!isNaN(numValue) && numValue > 0) {
-      const dims: LabelDimensions = { width: numValue, height: numValue, shape: "circular" };
+      const dims: LabelDimensions = {
+        width: numValue,
+        height: numValue,
+        shape: "circular",
+      };
       onChange(dims);
     }
   };
@@ -59,7 +76,11 @@ export default function LabelSizeSelector({
     setWidth(value);
     const numValue = parseFloat(value);
     if (!isNaN(numValue) && numValue > 0) {
-      const dims: LabelDimensions = { width: numValue, height: dimensions.height, shape: "rectangular" };
+      const dims: LabelDimensions = {
+        width: numValue,
+        height: dimensions.height,
+        shape: "rectangular",
+      };
       onChange(dims);
     }
   };
@@ -68,7 +89,11 @@ export default function LabelSizeSelector({
     setHeight(value);
     const numValue = parseFloat(value);
     if (!isNaN(numValue) && numValue > 0) {
-      const dims: LabelDimensions = { width: dimensions.width, height: numValue, shape: "rectangular" };
+      const dims: LabelDimensions = {
+        width: dimensions.width,
+        height: numValue,
+        shape: "rectangular",
+      };
       onChange(dims);
     }
   };
@@ -77,7 +102,11 @@ export default function LabelSizeSelector({
     if (shape === "circular") {
       const diameterNum = parseFloat(diameter);
       if (!isNaN(diameterNum) && diameterNum > 0) {
-        const finalDimensions: LabelDimensions = { width: diameterNum, height: diameterNum, shape: "circular" };
+        const finalDimensions: LabelDimensions = {
+          width: diameterNum,
+          height: diameterNum,
+          shape: "circular",
+        };
         onChange(finalDimensions);
         if (onDimensionsFinalized) {
           onDimensionsFinalized(finalDimensions);
@@ -87,8 +116,17 @@ export default function LabelSizeSelector({
       const widthNum = parseFloat(width);
       const heightNum = parseFloat(height);
 
-      if (!isNaN(widthNum) && widthNum > 0 && !isNaN(heightNum) && heightNum > 0) {
-        const finalDimensions: LabelDimensions = { width: widthNum, height: heightNum, shape: "rectangular" };
+      if (
+        !isNaN(widthNum) &&
+        widthNum > 0 &&
+        !isNaN(heightNum) &&
+        heightNum > 0
+      ) {
+        const finalDimensions: LabelDimensions = {
+          width: widthNum,
+          height: heightNum,
+          shape: "rectangular",
+        };
         onChange(finalDimensions);
         if (onDimensionsFinalized) {
           onDimensionsFinalized(finalDimensions);
@@ -135,7 +173,10 @@ export default function LabelSizeSelector({
         {/* Dimension Inputs */}
         {shape === "circular" ? (
           <div>
-            <label htmlFor="diameter" className="block text-sm font-medium text-gray-700 mb-2">
+            <label
+              htmlFor="diameter"
+              className="block text-sm font-medium text-gray-700 mb-2"
+            >
               Diameter (inches)
             </label>
             <input
@@ -150,14 +191,18 @@ export default function LabelSizeSelector({
               placeholder="e.g., 3"
             />
             <p className="mt-3 text-sm text-gray-500">
-              Enter your circular label diameter. Products will be filtered to show compatible options.
+              Enter your circular label diameter. Products will be filtered to
+              show compatible options.
             </p>
           </div>
         ) : (
           <div>
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label htmlFor="width" className="block text-sm font-medium text-gray-700 mb-2">
+                <label
+                  htmlFor="width"
+                  className="block text-sm font-medium text-gray-700 mb-2"
+                >
                   Width (inches)
                 </label>
                 <input
@@ -173,7 +218,10 @@ export default function LabelSizeSelector({
                 />
               </div>
               <div>
-                <label htmlFor="height" className="block text-sm font-medium text-gray-700 mb-2">
+                <label
+                  htmlFor="height"
+                  className="block text-sm font-medium text-gray-700 mb-2"
+                >
                   Height (inches)
                 </label>
                 <input
@@ -189,9 +237,9 @@ export default function LabelSizeSelector({
                 />
               </div>
             </div>
-            <p className="mt-3 text-sm text-gray-500">
+            {/* <p className="mt-3 text-sm text-gray-500">
               Enter your label dimensions. Products will be filtered to show compatible options.
-            </p>
+            </p> */}
           </div>
         )}
       </div>
