@@ -24,11 +24,6 @@ export async function generateProductMockup(
   artworkFile: File,
   prompt: string
 ): Promise<string> {
-  console.log('=== Gemini Image Generation Call ===');
-  console.log('Artwork file:', artworkFile.name);
-  console.log('File size:', artworkFile.size, 'bytes');
-  console.log('Using custom prompt from product configuration');
-
   const startTime = Date.now();
 
   try {
@@ -36,8 +31,6 @@ export async function generateProductMockup(
     const arrayBuffer = await artworkFile.arrayBuffer();
     const buffer = Buffer.from(arrayBuffer);
     const base64Image = buffer.toString('base64');
-
-    console.log('Artwork converted to base64, sending to Gemini...');
 
     // Prepare the prompt with image data
     const contents = [
@@ -56,10 +49,6 @@ export async function generateProductMockup(
       contents: contents,
     });
 
-    const endTime = Date.now();
-    const duration = ((endTime - startTime) / 1000).toFixed(2);
-    console.log(`Gemini response received in ${duration}s`);
-
     // Extract the generated image from response
     const candidate = response.candidates?.[0];
 
@@ -71,7 +60,6 @@ export async function generateProductMockup(
     // Find the image part in the response
     for (const part of candidate.content.parts) {
       if (part.inlineData?.data) {
-        console.log('Generated image received (base64)');
         return part.inlineData.data;
       }
     }

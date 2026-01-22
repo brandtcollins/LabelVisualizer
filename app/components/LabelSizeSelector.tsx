@@ -237,9 +237,6 @@ export default function LabelSizeSelector({
                 />
               </div>
             </div>
-            {/* <p className="mt-3 text-sm text-gray-500">
-              Enter your label dimensions. Products will be filtered to show compatible options.
-            </p> */}
           </div>
         )}
       </div>

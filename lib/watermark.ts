@@ -197,9 +197,6 @@ export async function addLogoWatermark(
       .composite([compositeOptions])
       .toBuffer();
 
-    console.log(
-      `Watermark with text applied at position: ${position} with opacity: ${opacity}`
-    );
     return watermarked;
   } catch (error) {
     console.error("Watermark error:", error);
@@ -371,9 +368,6 @@ export async function addStepAndRepeatWatermark(
       ])
       .toBuffer();
 
-    console.log(
-      `Step and repeat watermark applied with ${tilesX * tilesY} tiles at ${angle}° angle`
-    );
     return watermarked;
   } catch (error) {
     console.error("Step and repeat watermark error:", error);

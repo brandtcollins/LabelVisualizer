@@ -23,7 +23,6 @@ export async function saveUploadedFile(
 ): Promise<string> {
   // In production, skip saving uploads - they're only needed temporarily for Gemini
   if (isProduction) {
-    console.log('Production mode: skipping upload save, using temp storage');
     return `/uploads/${hash}.png`;
   }
 
@@ -37,32 +36,7 @@ export async function saveUploadedFile(
 
   await fs.writeFile(filepath, buffer);
 
-  console.log('Saved uploaded file:', filepath);
-
   return `/uploads/${filename}`;
-}
-
-/**
- * Download image from URL and save to filesystem
- */
-export async function downloadAndSaveImage(
-  url: string,
-  filename: string
-): Promise<string> {
-  const generatedDir = path.join(process.cwd(), 'public', 'generated');
-
-  // Ensure generated directory exists
-  await fs.mkdir(generatedDir, { recursive: true });
-
-  const response = await fetch(url);
-  const buffer = Buffer.from(await response.arrayBuffer());
-
-  const filepath = path.join(generatedDir, filename);
-  await fs.writeFile(filepath, buffer);
-
-  console.log('Saved generated image:', filepath);
-
-  return `/generated/${filename}`;
 }
 
 /**
@@ -83,8 +57,6 @@ export async function saveBase64Image(
   const filepath = path.join(generatedDir, filename);
   await fs.writeFile(filepath, buffer);
 
-  console.log('Saved base64 image:', filepath);
-
   return `/generated/${filename}`;
 }
 
@@ -98,14 +70,11 @@ export async function saveBufferImage(
 ): Promise<string> {
   // In production, use Vercel Blob storage
   if (isProduction) {
-    console.log('Production mode: uploading to Vercel Blob...');
-
     const blob = await put(`generated/${filename}`, buffer, {
       access: 'public',
       contentType: 'image/png',
     });
 
-    console.log('Saved to Vercel Blob:', blob.url);
     return blob.url;
   }
 
@@ -117,8 +86,6 @@ export async function saveBufferImage(
 
   const filepath = path.join(generatedDir, filename);
   await fs.writeFile(filepath, buffer);
-
-  console.log('Saved buffer image:', filepath);
 
   return `/generated/${filename}`;
 }

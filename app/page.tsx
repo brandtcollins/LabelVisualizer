@@ -81,11 +81,6 @@ export default function Home() {
     setLoading(true);
     setError(null);
 
-    console.log("=== Client: Starting generation ===");
-    console.log("Selected file:", selectedFile.name);
-    console.log("Label dimensions:", labelDimensions);
-    console.log("Product type:", selectedProduct);
-
     try {
       // Create FormData
       const formData = new FormData();
@@ -112,23 +107,17 @@ export default function Home() {
         formData.append("watermarkId", watermarkSettings.selectedId);
       }
 
-      console.log("Sending POST request to /api/generate...");
-
       // Make API call
       const response = await fetch("/api/generate", {
         method: "POST",
         body: formData,
       });
 
-      console.log("Response status:", response.status);
-
       const data = await response.json();
-      console.log("Response data:", data);
 
       if (data.success) {
         setMockupData(data);
         setShowMockup(true);
-        console.log("Success! Showing mockup");
       } else {
         setError(data.error || "Failed to generate mockup");
         console.error("API returned error:", data.error);
@@ -284,14 +273,6 @@ export default function Home() {
                     ? `${labelDimensions.width}" diameter`
                     : `${labelDimensions.width}" × ${labelDimensions.height}"`}
                 </p>
-                {/* {mockupData && (
-                  <p className="text-xs text-gray-400">
-                    {mockupData.cached
-                      ? "✓ Retrieved from cache"
-                      : "✓ Newly generated"}
-                    {mockupData.message && ` • ${mockupData.message}`}
-                  </p>
-                )} */}
               </div>
             </div>
 

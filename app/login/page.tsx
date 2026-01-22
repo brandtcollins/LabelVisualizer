@@ -50,12 +50,6 @@ export default function LoginPage() {
 
           <form onSubmit={handleSubmit} className="space-y-6">
             <div>
-              {/* <label
-                htmlFor="password"
-                className="block text-sm font-medium text-gray-700 mb-2"
-              >
-                Demo Password
-              </label> */}
               <input
                 type="password"
                 id="password"

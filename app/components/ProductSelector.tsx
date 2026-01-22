@@ -166,21 +166,7 @@ export default function ProductSelector({
         >
           <div className="relative">
             <div className="w-full bg-white border-2 border-gray-300 rounded-xl p-4 flex items-center gap-3 hover:border-primary-300 transition-colors focus-within:ring-2 focus-within:ring-primary focus-within:border-primary">
-              {/* <div className="w-10 h-10 bg-primary/10 rounded-lg flex items-center justify-center flex-shrink-0">
-                <svg
-                  className="w-6 h-6 text-primary"
-                  fill="none"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth="2"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                >
-                  <path d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
-                </svg>
-              </div> */}
               <div className="flex-1 min-w-0">
-                {/* <p className="text-sm text-gray-500">Product Type</p> */}
                 <ComboboxInput
                   className="w-full font-semibold text-gray-900 bg-transparent border-none outline-none placeholder:text-gray-400 placeholder:font-normal"
                   placeholder="Search or select a product..."

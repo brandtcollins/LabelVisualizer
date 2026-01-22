@@ -16,13 +16,43 @@ const WATERMARK_PATHS: Record<string, string> = {
   "olg-watermark": path.join(process.cwd(), "public", "images", "olg-watermark-white.png"),
 };
 
+// CORS: Allowed origins (add production domains as needed)
+const ALLOWED_ORIGINS = [
+  "http://localhost:5001",  // Vue app (dev)
+  "http://localhost:5000",  // This app (dev)
+];
+
+function getCorsHeaders(origin: string | null) {
+  const headers: Record<string, string> = {
+    "Access-Control-Allow-Methods": "POST, OPTIONS",
+    "Access-Control-Allow-Headers": "Content-Type, x-api-key",
+  };
+
+  if (origin && ALLOWED_ORIGINS.includes(origin)) {
+    headers["Access-Control-Allow-Origin"] = origin;
+  }
+
+  return headers;
+}
+
 export const runtime = "nodejs";
+
+// Handle CORS preflight requests
+export async function OPTIONS(request: NextRequest) {
+  const origin = request.headers.get("origin");
+  return new NextResponse(null, {
+    status: 204,
+    headers: getCorsHeaders(origin),
+  });
+}
 
 // Check if password protection is enabled
 const isPasswordProtected = !!process.env.DEMO_PASSWORD;
 
 export async function POST(request: NextRequest) {
   const startTime = Date.now();
+  const origin = request.headers.get("origin");
+  const corsHeaders = getCorsHeaders(origin);
 
   try {
     const formData = await request.formData();
@@ -33,7 +63,7 @@ export async function POST(request: NextRequest) {
       if (password !== process.env.DEMO_PASSWORD) {
         return NextResponse.json(
           { success: false, error: "Invalid password" },
-          { status: 401 }
+          { status: 401, headers: corsHeaders }
         );
       }
     }
@@ -52,6 +82,7 @@ export async function POST(request: NextRequest) {
         {
           status: 429,
           headers: {
+            ...corsHeaders,
             "X-RateLimit-Limit": rateLimitResult.limit.toString(),
             "X-RateLimit-Remaining": rateLimitResult.remaining.toString(),
             "X-RateLimit-Reset": rateLimitResult.reset.toString(),
@@ -66,21 +97,12 @@ export async function POST(request: NextRequest) {
     const watermarkEnabled = formData.get("watermarkEnabled") === "true";
     const watermarkId = formData.get("watermarkId") as string | null;
 
-    console.log("=== API Generate Request ===");
-    console.log("File name:", artworkFile?.name);
-    console.log("File size:", artworkFile?.size, "bytes");
-    console.log("File type:", artworkFile?.type);
-    console.log("Label size:", labelSize);
-    console.log("Product ID:", productId);
-    console.log("Watermark enabled:", watermarkEnabled);
-    console.log("Watermark ID:", watermarkId);
-
     // Validate required fields
     if (!artworkFile || !labelSize || !productId) {
       console.error("Missing required fields");
       return NextResponse.json(
         { success: false, error: "Missing required fields" },
-        { status: 400 }
+        { status: 400, headers: corsHeaders }
       );
     }
 
@@ -90,7 +112,7 @@ export async function POST(request: NextRequest) {
       console.error("Invalid product ID:", productId);
       return NextResponse.json(
         { success: false, error: "Invalid product type" },
-        { status: 400 }
+        { status: 400, headers: corsHeaders }
       );
     }
 
@@ -100,7 +122,7 @@ export async function POST(request: NextRequest) {
       console.error("File too large:", artworkFile.size);
       return NextResponse.json(
         { success: false, error: "File size exceeds 10MB limit" },
-        { status: 400 }
+        { status: 400, headers: corsHeaders }
       );
     }
 
@@ -110,36 +132,30 @@ export async function POST(request: NextRequest) {
       console.error("Invalid file type:", artworkFile.type);
       return NextResponse.json(
         { success: false, error: "Only PNG and JPEG files are accepted" },
-        { status: 400 }
+        { status: 400, headers: corsHeaders }
       );
     }
 
     // Convert to buffer
     const buffer = Buffer.from(await artworkFile.arrayBuffer());
-    console.log("Buffer size:", buffer.length);
 
     // Hash the buffer for caching and file naming
     const artworkHash = hashBuffer(buffer);
-    console.log("Artwork hash:", artworkHash);
 
     // Save uploaded artwork
-    const uploadedPath = await saveUploadedFile(buffer, artworkHash);
-    console.log("Uploaded artwork saved:", uploadedPath);
+    await saveUploadedFile(buffer, artworkHash);
 
     // Build prompt from product scene configuration with label size
     const prompt = buildPromptForProduct(productScene, labelSize);
-    console.log("Generated prompt:", prompt);
 
     // Generate mockup with Gemini image generation
     const base64Image = await generateProductMockup(artworkFile, prompt);
-    console.log("Gemini image generated");
 
     // Conditionally apply watermark
     let finalImageBuffer: Buffer;
     if (watermarkEnabled && watermarkId) {
       if (watermarkId === "olg-step-repeat") {
         // Apply step and repeat pattern
-        console.log("Applying step and repeat watermark");
         finalImageBuffer = await addStepAndRepeatWatermark(base64Image, {
           logoPath: WATERMARK_PATHS["olg-watermark"],
           logoWidth: 112,
@@ -149,18 +165,15 @@ export async function POST(request: NextRequest) {
         });
       } else if (WATERMARK_PATHS[watermarkId]) {
         // Apply single logo watermark
-        console.log("Applying watermark:", watermarkId);
         finalImageBuffer = await addLogoWatermark(base64Image, {
           logoPath: WATERMARK_PATHS[watermarkId],
           padding: 20,
           opacity: 0.35,
         });
       } else {
-        console.log("Unknown watermark ID, saving without watermark");
         finalImageBuffer = Buffer.from(base64Image, "base64");
       }
     } else {
-      console.log("Watermark disabled, saving without watermark");
       finalImageBuffer = Buffer.from(base64Image, "base64");
     }
 
@@ -170,21 +183,23 @@ export async function POST(request: NextRequest) {
     const savedUrl = await saveBufferImage(finalImageBuffer, filename);
 
     const generationTime = (Date.now() - startTime) / 1000;
-    console.log(`Total generation time: ${generationTime.toFixed(2)}s`);
 
-    return NextResponse.json({
-      success: true,
-      imageUrl: savedUrl,
-      cached: false,
-      generationTime,
-    });
+    return NextResponse.json(
+      {
+        success: true,
+        imageUrl: savedUrl,
+        cached: false,
+        generationTime,
+      },
+      { headers: corsHeaders }
+    );
   } catch (error) {
     console.error("Generation error:", error);
     const errorMessage =
       error instanceof Error ? error.message : "Failed to generate mockup";
     return NextResponse.json(
       { success: false, error: errorMessage },
-      { status: 500 }
+      { status: 500, headers: corsHeaders }
     );
   }
 }
