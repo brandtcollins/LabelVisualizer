@@ -107,8 +107,8 @@ export default function Home() {
         formData.append("watermarkId", watermarkSettings.selectedId);
       }
 
-      // Make API call
-      const response = await fetch("/api/generate", {
+      // Make API call (through proxy to Spark)
+      const response = await fetch("/api/proxy/generate", {
         method: "POST",
         body: formData,
       });
